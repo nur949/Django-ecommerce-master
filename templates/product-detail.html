@@ -1,0 +1,470 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head_title %}{{ object.get_meta_title }}{% endblock %}
+
+{% block head_description %}
+  <meta name="description" content="{{ object.get_meta_description }}" />
+{% endblock %}
+
+{% block extra_head %}
+  {% if object.seo_meta_keywords %}
+    <meta name="keywords" content="{{ object.seo_meta_keywords }}">
+  {% endif %}
+  
+  <!-- Open Graph / Facebook sharing -->
+  <meta property="og:type" content="product">
+  <meta property="og:title" content="{{ object.get_og_title }}">
+  <meta property="og:description" content="{{ object.get_og_description }}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% if object.get_og_image_url %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ object.get_og_image_url }}">
+  {% endif %}
+  <meta property="product:price:amount" content="{{ object.price }}">
+  <meta property="product:price:currency" content="BDT">
+
+  <!-- Schema.org / JSON-LD structured data -->
+  {% if object.seo_schema_markup %}
+    {{ object.seo_schema_markup|safe }}
+  {% else %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "{{ object.title }}",
+      "image": [
+        "{% if object.image %}{{ request.scheme }}://{{ request.get_host }}{{ object.image.url }}{% endif %}"
+      ],
+      "description": "{{ object.description_short }}",
+      "sku": "{{ object.stock_no }}",
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ request.build_absolute_uri }}",
+        "priceCurrency": "BDT",
+        "price": "{% if object.discount_price %}{{ object.discount_price }}{% else %}{{ object.price }}{% endif %}",
+        "itemCondition": "https://schema.org/NewCondition",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+    </script>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+	<!-- breadcrumb -->
+	<div class="bread-crumb bgwhite flex-w p-l-52 p-r-15 p-t-30 p-l-15-sm">
+		<a href="/" class="s-text16">
+			Home
+			<i class="fa fa-angle-right m-l-8 m-r-9" aria-hidden="true"></i>
+		</a>
+
+		<a href="{% url 'products:category' object.category.slug %}" class="s-text16">
+			{{ object.category }}
+			<i class="fa fa-angle-right m-l-8 m-r-9" aria-hidden="true"></i>
+		</a>
+
+		<span class="s-text17">
+			{{object.title}}
+		</span>
+	</div>
+
+	<!-- Product Detail -->
+	<div class="container bgwhite p-t-35 p-b-80">
+		<div class="flex-w flex-sb">
+			<div class="w-size13 p-t-30 respon5">
+				<div class="wrap-slick3 flex-sb flex-w">
+					<div class="wrap-slick3-dots"></div>
+
+					<div class="slick3">
+						<!-- Main Product Image -->
+						{% if object.image %}
+						<div class="item-slick3" data-thumb="{{ object.image.url }}">
+							<div class="wrap-pic-w">
+								<img src="{{ object.image.url }}" alt="{{ object.title }}">
+							</div>
+						</div>
+						{% endif %}
+
+						<!-- Additional Gallery Media (Images & Videos) -->
+						{% for media in object.media.all %}
+							{% if media.media_type == 'image' %}
+								{% if media.file %}
+								<div class="item-slick3" data-thumb="{{ media.file.url }}">
+									<div class="wrap-pic-w">
+										<img src="{{ media.file.url }}" alt="{{ media.image_alt|default:object.title }}">
+									</div>
+								</div>
+								{% endif %}
+							{% elif media.media_type == 'video' %}
+								<div class="item-slick3" data-thumb="{{ media.get_thumbnail_url }}">
+									<div class="wrap-pic-w video-slide-container" style="background-color: #000; position: relative; padding-bottom: 80%; height: 0; overflow: hidden; border-radius: 8px;">
+										{% if media.video_url %}
+											{% if media.get_youtube_id %}
+												<iframe src="https://www.youtube.com/embed/{{ media.get_youtube_id }}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+											{% else %}
+												<iframe src="{{ media.video_url }}" frameborder="0" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+											{% endif %}
+										{% elif media.file %}
+											<video controls style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;" poster="{% if media.thumbnail %}{{ media.thumbnail.url }}{% endif %}">
+												<source src="{{ media.file.url }}" type="video/mp4">
+												Your browser does not support the video tag.
+											</video>
+										{% endif %}
+									</div>
+								</div>
+							{% endif %}
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+
+			<div class="w-size14 p-t-30 respon5">
+				<h4 class="product-detail-name m-text16 p-b-13">
+					{{object.title}}
+				</h4>
+
+				
+				{% if object.discount_price %}
+								<span class="block2-oldprice m-text7 p-r-5" style="font-size: 1.5rem;">
+									৳{{ object.price }}
+								</span>
+
+								<span class="block2-newprice m-text8 p-r-5" style="font-size: 1.5rem;">
+									৳{{ object.discount_price }}
+								</span>
+								{% else %}
+								<span class="m-text17">
+									৳{{object.price}}
+								</span>
+								{% endif %}
+
+				<p class="s-text8 p-t-10">
+					{{ object.description_short }}
+				</p>
+
+				<!--  -->
+				<form action="{% url 'cart:add-to-cart' object.slug %}" method="POST" class="p-t-33 p-b-60">
+					{% csrf_token %}
+					{% if object.has_sizes %}
+						<!-- Size variations -->
+						<div class="flex-m flex-w p-b-10">
+							<div class="s-text15 w-size15 t-center">
+								Size
+							</div>
+
+							<div class="rs2-select2 rs3-select2 w-size16">
+								<select class="form-control" name="size">
+									<option>Choose an option</option>
+									{% for variation in object.variations.all %}
+										{% if variation.category == 'size' %}
+											<option value="{{ variation.title }}">{{ variation.title }}{% if variation.price_modifier > 0 %} (+৳{{ variation.price_modifier|floatformat:0 }}){% endif %}</option>
+										{% endif %}
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+					{% endif %}
+
+					{% if object.has_colors %}
+						<!-- Color variations -->
+						<div class="flex-m flex-w p-b-20">
+							<div class="s-text15 w-size15 t-center">
+								Color
+							</div>
+
+							<div class="rs2-select2 rs3-select2 w-size16">
+								<select class="form-control" name="color">
+									<option>Choose an option</option>
+									{% for variation in object.variations.all %}
+										{% if variation.category == 'color' %}
+											<option value="{{ variation.title }}">{{ variation.title }}{% if variation.price_modifier > 0 %} (+৳{{ variation.price_modifier|floatformat:0 }}){% endif %}</option>
+										{% endif %}
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+					{% endif %}
+
+					<div class="flex-r-m flex-w p-t-10">
+						<div class="w-size16 flex-m flex-w">
+							<div class="flex-w bo5 of-hidden m-r-22 m-t-10 m-b-10">
+								<button type="button" class="btn-num-product-down color1 flex-c-m size7 bg8 eff2">
+									<i class="fs-12 fa fa-minus" aria-hidden="true"></i>
+								</button>
+
+								<input class="size8 m-text18 t-center num-product" type="number" name="num-product" value="1">
+
+								<button type="button" class="btn-num-product-up color1 flex-c-m size7 bg8 eff2">
+									<i class="fs-12 fa fa-plus" aria-hidden="true"></i>
+								</button>
+							</div>
+							
+							<div class="d-flex w-full m-t-10">
+								<button type="submit" class="btn btn-primary px-4 py-3 mr-2" style="border-radius: 25px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Add to Cart</button>
+								<a href="{{ object.get_remove_from_cart_url }}" class="btn btn-outline-dark px-4 py-3" style="border-radius: 25px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Remove</a>
+							</div>
+						</div>
+					</div>
+				</form>
+				<br>
+				<div class="p-b-45">
+					<span class="s-text8 m-r-35">SKU: {{ object.stock_no }}</span>
+					<span class="s-text8">Categories: {{ object.category }}</span>
+				</div>
+
+				<!--  -->
+				<div class="wrap-dropdown-content bo6 p-t-15 p-b-14 active-dropdown-content">
+					<h5 class="js-toggle-dropdown-content flex-sb-m cs-pointer m-text19 color0-hov trans-0-4">
+						Description
+						<i class="down-mark fs-12 color1 fa fa-minus dis-none" aria-hidden="true"></i>
+						<i class="up-mark fs-12 color1 fa fa-plus" aria-hidden="true"></i>
+					</h5>
+
+					<div class="dropdown-content dis-none p-t-15 p-b-23">
+						<p class="s-text8">
+							{{ object.description_long }}
+						</p>
+					</div>
+				</div>
+
+				<div class="wrap-dropdown-content bo7 p-t-15 p-b-14">
+					<h5 class="js-toggle-dropdown-content flex-sb-m cs-pointer m-text19 color0-hov trans-0-4">
+						Additional information
+						<i class="down-mark fs-12 color1 fa fa-minus dis-none" aria-hidden="true"></i>
+						<i class="up-mark fs-12 color1 fa fa-plus" aria-hidden="true"></i>
+					</h5>
+
+					<div class="dropdown-content dis-none p-t-15 p-b-23">
+						<p class="s-text8">
+							Fusce ornare mi vel risus porttitor dignissim. Nunc eget risus at ipsum blandit ornare vel sed velit. Proin gravida arcu nisl, a dignissim mauris placerat
+						</p>
+					</div>
+				</div>
+
+				<div class="wrap-dropdown-content bo7 p-t-15 p-b-14">
+					<h5 class="js-toggle-dropdown-content flex-sb-m cs-pointer m-text19 color0-hov trans-0-4">
+						Reviews (0)
+						<i class="down-mark fs-12 color1 fa fa-minus dis-none" aria-hidden="true"></i>
+						<i class="up-mark fs-12 color1 fa fa-plus" aria-hidden="true"></i>
+					</h5>
+
+					<div class="dropdown-content dis-none p-t-15 p-b-23">
+						<p class="s-text8">
+							Fusce ornare mi vel risus porttitor dignissim. Nunc eget risus at ipsum blandit ornare vel sed velit. Proin gravida arcu nisl, a dignissim mauris placerat
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- Relate Product -->
+	<section class="relateproduct bgwhite p-t-45 p-b-138">
+		<div class="container">
+			<div class="sec-title p-b-60">
+				<h3 class="m-text5 t-center">
+					Related Products
+				</h3>
+			</div>
+
+			<!-- Slide2 -->
+			<div class="wrap-slick2">
+				<div class="slick2">
+
+					{% for item in related_products %}
+					<div class="item-slick2 p-l-15 p-r-15">
+						<!-- Block2 -->
+						{% include 'product_card.html' %}
+					</div>
+					{% endfor %}
+				</div>
+			</div>
+
+		</div>
+	</section>
+
+
+	<!-- Footer -->
+	<footer class="bg6 p-t-45 p-b-43 p-l-45 p-r-45">
+		<div class="flex-w p-b-90">
+			<div class="w-size6 p-t-30 p-l-15 p-r-15 respon3">
+				<h4 class="s-text12 p-b-30">
+					GET IN TOUCH
+				</h4>
+
+				<div>
+					<p class="s-text7 w-size27">
+						Any questions? Let us know in store at 8th floor, 379 Hudson St, New York, NY 10018 or call us on (+1) 96 716 6879
+					</p>
+
+					<div class="flex-m p-t-30">
+						<a href="#" class="fs-18 color1 p-r-20 fa fa-facebook"></a>
+						<a href="#" class="fs-18 color1 p-r-20 fa fa-instagram"></a>
+						<a href="#" class="fs-18 color1 p-r-20 fa fa-pinterest-p"></a>
+						<a href="#" class="fs-18 color1 p-r-20 fa fa-snapchat-ghost"></a>
+						<a href="#" class="fs-18 color1 p-r-20 fa fa-youtube-play"></a>
+					</div>
+				</div>
+			</div>
+
+			<div class="w-size7 p-t-30 p-l-15 p-r-15 respon4">
+				<h4 class="s-text12 p-b-30">
+					Categories
+				</h4>
+
+				<ul>
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Men
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Women
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Dresses
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Sunglasses
+						</a>
+					</li>
+				</ul>
+			</div>
+
+			<div class="w-size7 p-t-30 p-l-15 p-r-15 respon4">
+				<h4 class="s-text12 p-b-30">
+					Links
+				</h4>
+
+				<ul>
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Search
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							About Us
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Contact Us
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Returns
+						</a>
+					</li>
+				</ul>
+			</div>
+
+			<div class="w-size7 p-t-30 p-l-15 p-r-15 respon4">
+				<h4 class="s-text12 p-b-30">
+					Help
+				</h4>
+
+				<ul>
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Track Order
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Returns
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							Shipping
+						</a>
+					</li>
+
+					<li class="p-b-9">
+						<a href="#" class="s-text7">
+							FAQs
+						</a>
+					</li>
+				</ul>
+			</div>
+
+			<div class="w-size8 p-t-30 p-l-15 p-r-15 respon3">
+				<h4 class="s-text12 p-b-30">
+					Newsletter
+				</h4>
+
+				<form>
+					<div class="effect1 w-size9">
+						<input class="s-text7 bg6 w-full p-b-5" type="text" name="email" placeholder="email@example.com">
+						<span class="effect1-line"></span>
+					</div>
+
+					<div class="w-size2 p-t-20">
+						<!-- Button -->
+						<button class="flex-c-m size2 bg4 bo-rad-23 hov1 m-text3 trans-0-4">
+							Subscribe
+						</button>
+					</div>
+
+				</form>
+			</div>
+		</div>
+
+		<div class="t-center p-l-15 p-r-15">
+			<a href="#">
+				<img class="h-size2" src="{% static 'images/icons/paypal.png' %}" alt="IMG-PAYPAL">
+			</a>
+
+			<a href="#">
+				<img class="h-size2" src="{% static 'images/icons/visa.png' %}" alt="IMG-VISA">
+			</a>
+
+			<a href="#">
+				<img class="h-size2" src="{% static 'images/icons/mastercard.png' %}" alt="IMG-MASTERCARD">
+			</a>
+
+			<a href="#">
+				<img class="h-size2" src="{% static 'images/icons/express.png' %}" alt="IMG-EXPRESS">
+			</a>
+
+			<a href="#">
+				<img class="h-size2" src="{% static 'images/icons/discover.png' %}" alt="IMG-DISCOVER">
+			</a>
+
+			<div class="t-center s-text8 p-t-20">
+				Copyright © 2018 All rights reserved. | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+			</div>
+		</div>
+	</footer>
+
+
+
+	<!-- Back to top -->
+	<div class="btn-back-to-top bg0-hov" id="myBtn">
+		<span class="symbol-btn-back-to-top">
+			<i class="fa fa-angle-double-up" aria-hidden="true"></i>
+		</span>
+	</div>
+
+	<!-- Container Selection -->
+	<div id="dropDownSelect1"></div>
+	<div id="dropDownSelect2"></div>
+
+	{% endblock content %}

@@ -1,0 +1,445 @@
+{% extends 'admin/index.html' %}
+{% load i18n %}
+
+{% block content %}
+  <style>
+    .clean-dashboard {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    /* Standard modern white cards */
+    .dashboard-card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      padding: 24px;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.02), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html.dark .dashboard-card {
+      background-color: #121214 !important;
+      border: 1px solid #1e1e24 !important;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .dashboard-card.stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px -5px rgba(99, 102, 241, 0.12) !important;
+      border-color: rgba(99, 102, 241, 0.2) !important;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    html.dark .stat-label {
+      color: #a1a1aa;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    html.dark .stat-value {
+      color: #f4f4f5;
+    }
+
+    .stat-icon-wrapper {
+      padding: 14px;
+      border-radius: 12px;
+      background-color: #f8fafc;
+      color: #6366f1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .dashboard-card.stat-card:hover .stat-icon-wrapper {
+      transform: scale(1.1);
+    }
+
+    /* Layout detail columns */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    html.dark .section-title {
+      color: #f4f4f5;
+    }
+
+    /* Table styling */
+    .clean-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .clean-table th, .clean-table td {
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 13.5px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    html.dark .clean-table th, html.dark .clean-table td {
+      border-bottom: 1px solid #1e1e24;
+    }
+
+    .clean-table th {
+      font-weight: 700;
+      color: #475569;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      background-color: #f8fafc;
+    }
+
+    html.dark .clean-table th {
+      background-color: #18181b;
+      color: #a1a1aa;
+    }
+
+    .clean-table td {
+      color: #334155;
+    }
+
+    html.dark .clean-table td {
+      color: #d4d4d8;
+    }
+
+    .clean-table tr:hover td {
+      background-color: rgba(99, 102, 241, 0.02) !important;
+    }
+
+    html.dark .clean-table tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02) !important;
+    }
+
+    /* Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .status-completed { background-color: rgba(34, 197, 94, 0.1); color: #166534; }
+    .status-pending { background-color: rgba(245, 158, 11, 0.1); color: #92400e; }
+    .status-shipping { background-color: rgba(59, 130, 246, 0.1); color: #075985; }
+    .status-refunded { background-color: rgba(239, 68, 68, 0.1); color: #991b1b; }
+
+    /* Action Links list */
+    .action-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html.dark .action-item {
+      border-color: #27272a;
+      color: #d4d4d8;
+    }
+
+    .action-item:hover {
+      border-color: #6366f1;
+      background-color: rgba(99, 102, 241, 0.05);
+      color: #4f46e5;
+      transform: translateX(4px);
+    }
+
+    html.dark .action-item:hover {
+      background-color: rgba(99, 102, 241, 0.1);
+      color: #ffffff;
+    }
+
+    .action-icon {
+      color: #6366f1;
+      transition: all 0.2s ease;
+    }
+
+    .action-item:hover .action-icon {
+      transform: scale(1.1);
+    }
+  </style>
+
+  <div class="clean-dashboard">
+    <!-- Stats Row -->
+    <div class="stats-grid">
+      <!-- Card: Revenue -->
+      <div class="dashboard-card stat-card">
+        <div>
+          <span class="stat-label">Total Revenue</span>
+          <div class="stat-value">৳{{ total_revenue }}</div>
+        </div>
+        <div class="stat-icon-wrapper" style="background-color: #f0fdf4; color: #16a34a;">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+      </div>
+
+      <!-- Card: Orders -->
+      <div class="dashboard-card stat-card">
+        <div>
+          <span class="stat-label">Orders</span>
+          <div class="stat-value">{{ total_orders }}</div>
+        </div>
+        <div class="stat-icon-wrapper" style="background-color: #eef2ff; color: #4f46e5;">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+        </div>
+      </div>
+
+      <!-- Card: Products -->
+      <div class="dashboard-card stat-card">
+        <div>
+          <span class="stat-label">Products</span>
+          <div class="stat-value">{{ total_products }}</div>
+        </div>
+        <div class="stat-icon-wrapper" style="background-color: #fff7ed; color: #ea580c;">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+        </div>
+      </div>
+
+      <!-- Card: Users -->
+      <div class="dashboard-card stat-card">
+        <div>
+          <span class="stat-label">Customers</span>
+          <div class="stat-value">{{ total_users }}</div>
+        </div>
+        <div class="stat-icon-wrapper" style="background-color: #f0fdfa; color: #0d9488;">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Layout -->
+    <div class="dashboard-layout">
+      <!-- Left Column: Revenue Chart & Recent Orders -->
+      <div>
+        <!-- Revenue Line Chart -->
+        <div class="dashboard-card" style="margin-bottom: 24px;">
+          <div class="section-title">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+            Revenue Analytics
+          </div>
+          <div style="height: 180px; width: 100%; position: relative; margin-top: 10px;">
+            <canvas id="revenueChart" style="max-height: 180px; width: 100%;"></canvas>
+          </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            var ctx = document.getElementById('revenueChart').getContext('2d');
+            var chart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: {{ month_names|safe }},
+                datasets: [{
+                  label: 'Revenue',
+                  data: {{ monthly_revenue|safe }},
+                  borderColor: '#6366f1',
+                  backgroundColor: 'rgba(99, 102, 241, 0.04)',
+                  borderWidth: 3,
+                  fill: true,
+                  tension: 0.4,
+                  pointBackgroundColor: '#6366f1',
+                  pointBorderColor: '#ffffff',
+                  pointBorderWidth: 2,
+                  pointRadius: 5,
+                  pointHoverRadius: 7
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return 'Revenue: ৳' + context.parsed.y.toLocaleString();
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return '৳' + value.toLocaleString();
+                      },
+                      font: {
+                        size: 10,
+                        weight: '500'
+                      },
+                      color: '#94a3b8'
+                    },
+                    grid: {
+                      color: '#f1f5f9'
+                    }
+                  },
+                  x: {
+                    ticks: {
+                      font: {
+                        size: 10,
+                        weight: '500'
+                      },
+                      color: '#94a3b8'
+                    },
+                    grid: {
+                      display: false
+                    }
+                  }
+                }
+              }
+            });
+          });
+        </script>
+
+        <!-- Recent Orders Table -->
+        <div class="dashboard-card" style="padding: 0; overflow: hidden;">
+          <div style="padding: 24px 24px 12px 24px;">
+            <div class="section-title" style="margin-bottom: 0;">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+              Recent Orders
+            </div>
+          </div>
+          
+          <table class="clean-table">
+            <thead>
+              <tr>
+                <th>Order Ref</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in recent_orders %}
+                <tr>
+                  <td style="font-family: monospace; font-weight: 600;">
+                    <a href="/admin/orders/order/{{ order.id }}/change/" style="color: #4f46e5; text-decoration: none;" class="hover:underline">
+                      {{ order.ref_code }}
+                    </a>
+                  </td>
+                  <td>{{ order.user.username|default:"Guest" }}</td>
+                  <td style="color: #64748b; font-size: 12px;">{{ order.ordered_date|date:"d M Y, H:i" }}</td>
+                  <td>
+                    {% if order.received %}
+                      <span class="status-badge status-completed">Completed</span>
+                    {% elif order.refund_granted %}
+                      <span class="status-badge status-refunded">Refunded</span>
+                    {% elif order.refund_requested %}
+                      <span class="status-badge status-refunded" style="background-color: #fff1f2; color: #be123c;">Refund Request</span>
+                    {% elif order.being_delivered %}
+                      <span class="status-badge status-shipping">Shipping</span>
+                    {% else %}
+                      <span class="status-badge status-pending">Placed</span>
+                    {% endif %}
+                  </td>
+                  <td style="text-align: right; font-weight: 700; color: #0f172a;">৳{{ order.get_total }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 30px; color: #64748b;">No recent orders.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Column: Quick Actions -->
+      <div class="dashboard-card" style="height: fit-content;">
+        <div class="section-title">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Quick Actions
+        </div>
+        <div class="action-list">
+          <a href="/admin/products/item/add/" class="action-item">
+            <svg class="w-5 h-5 action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Add Product
+          </a>
+          <a href="/admin/orders/order/" class="action-item">
+            <svg class="w-5 h-5 action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            View Orders
+          </a>
+          <a href="/admin/auth/user/" class="action-item">
+            <svg class="w-5 h-5 action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            Manage Customers
+          </a>
+          <a href="/admin/orders/coupon/" class="action-item">
+            <svg class="w-5 h-5 action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Manage Coupons
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

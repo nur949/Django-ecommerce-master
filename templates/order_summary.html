@@ -1,0 +1,259 @@
+{% extends 'base.html' %} 
+{% load static %} 
+{% block content %}
+
+<style>
+  /* Premium styles for Order Summary Table */
+  .summary-table-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+  }
+  .table-summary th, .table-summary td {
+    vertical-align: middle !important;
+  }
+  .summary-qty-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .summary-qty-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #cbd5e0;
+    background-color: #ffffff;
+    border-radius: 6px;
+    color: #4a5568;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+  }
+  .summary-qty-btn:hover {
+    background-color: #f7fafc;
+    border-color: #a0aec0;
+    color: #007bff;
+  }
+  .summary-qty-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2d3748;
+    min-width: 20px;
+    text-align: center;
+  }
+  .summary-remove-btn {
+    background: transparent;
+    border: none;
+    outline: none !important;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.2s ease;
+  }
+  .summary-remove-btn:hover {
+    color: #e53e3e;
+  }
+  .coupon-row {
+    background-color: #f7fafc;
+  }
+</style>
+
+<div class="container p-t-60 p-b-60">
+  <div class="row">
+    <div class="col-lg-12">
+      <h2 class="m-b-30" style="font-weight: 700; color: #1a202c;">Order Summary</h2>
+      
+      <div id="order-summary-content">
+        <!-- Rendered via AJAX -->
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var summaryContainer = document.getElementById("order-summary-content");
+    
+    window.renderSummary = function(data) {
+      if (!summaryContainer) return;
+      
+      if (!data.items || data.items.length === 0) {
+        summaryContainer.innerHTML = `
+          <div class="text-center py-5">
+            <div class="m-b-20">
+              <i class="fas fa-shopping-cart text-muted" style="font-size: 60px;"></i>
+            </div>
+            <h4 class="text-muted m-b-20">Your cart is empty</h4>
+            <a href="/" class="btn btn-primary px-5 py-3" style="border-radius: 25px; font-weight: 700;">Continue Shopping</a>
+          </div>
+        `;
+        return;
+      }
+      
+      var html = `
+        <div class="table-responsive">
+          <table class="table table-summary align-middle">
+            <thead>
+              <tr class="table-head">
+                <th scope="col" style="width: 80px;">#</th>
+                <th scope="col" style="width: 140px;">Image</th>
+                <th scope="col">Product Name</th>
+                <th scope="col" style="width: 180px;">Price</th>
+                <th scope="col" style="width: 160px;">Quantity</th>
+                <th scope="col" style="width: 220px;">Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      data.items.forEach(function(item, index) {
+        var imgUrl = item.image ? item.image : '/static/images/icons/icon-header-02.png';
+        
+        var priceHtml = '';
+        if (item.discount_price) {
+          priceHtml = `
+            <span style="text-decoration: line-through; color: #a0aec0; margin-right: 8px;">${item.price}</span>
+            <span class="text-danger font-weight-bold">${item.discount_price}</span>
+          `;
+        } else {
+          priceHtml = `<span>${item.price}</span>`;
+        }
+        
+        var totalHtml = '';
+        if (item.saved_amount) {
+          totalHtml = `
+            <span class="font-weight-bold text-dark">${item.total_price}</span>
+            <span class="badge badge-primary ml-2" style="font-size: 11px; padding: 4px 8px; border-radius: 12px;">Saving ${item.saved_amount}</span>
+          `;
+        } else {
+          totalHtml = `<span class="font-weight-bold text-dark">${item.total_price}</span>`;
+        }
+        
+        html += `
+          <tr>
+            <th scope="row" class="font-weight-bold text-muted">${index + 1}</th>
+            <td>
+              <img src="${imgUrl}" class="summary-table-img" alt="">
+            </td>
+            <td>
+              <a href="/product/${item.slug}/" class="text-dark font-weight-bold hov-color-primary" style="font-size: 15px;">${item.title}</a>
+              ${item.variations && item.variations.length > 0 ? `
+                <div class="small text-muted" style="margin-top: 4px;">
+                  ${item.variations.map(function(v) {
+                    return '<span class="mr-2"><strong>' + v.category.toUpperCase() + ':</strong> ' + v.title + (v.price_modifier > 0 ? ' (+৳' + Math.round(v.price_modifier) + ')' : '') + '</span>';
+                  }).join('')}
+                </div>
+              ` : ''}
+            </td>
+            <td>${priceHtml}</td>
+            <td>
+              <div class="summary-qty-container">
+                <button class="summary-qty-btn qty-minus-btn" data-slug="${item.slug}"><i class="fas fa-minus"></i></button>
+                <span class="summary-qty-val">${item.quantity}</span>
+                <button class="summary-qty-btn qty-plus-btn" data-slug="${item.slug}"><i class="fas fa-plus"></i></button>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex justify-content-between align-items-center">
+                ${totalHtml}
+                <button class="summary-remove-btn" data-slug="${item.slug}"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      
+      // Coupon row
+      if (data.coupon) {
+        html += `
+          <tr class="coupon-row">
+            <td colspan="5" class="text-right font-weight-bold py-3">Coupon (${data.coupon.code}) :</td>
+            <td class="font-weight-bold py-3 text-success">- ${data.coupon.amount}</td>
+          </tr>
+        `;
+      }
+      
+      // Order Total row
+      html += `
+          <tr>
+            <td colspan="5" class="text-right font-weight-bold py-3" style="font-size: 16px;">Order Total :</td>
+            <td class="font-weight-bold py-3 text-primary" style="font-size: 20px;">${data.total}</td>
+          </tr>
+          <tr>
+            <td colspan="6" class="py-4">
+              <a href="/orders/checkout/" class="btn btn-warning float-right ml-2 px-5 py-3" style="border-radius: 25px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Checkout</a>
+              <a href="/" class="btn btn-primary float-right px-5 py-3" style="border-radius: 25px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Continue Shopping</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      `;
+      
+      summaryContainer.innerHTML = html;
+    }
+    
+    // Fetch initial cart info
+    fetch('/cart/api/info/')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        renderSummary(data);
+      })
+      .catch(function(err) {
+        console.error("Error loading order summary:", err);
+      });
+      
+    // Handle AJAX events for +, -, and delete clicks inside summary table
+    if (summaryContainer) {
+      summaryContainer.addEventListener("click", function(e) {
+        // Find closest button or click target
+        var btn = e.target.closest("button");
+        if (!btn) return;
+        
+        var slug = btn.getAttribute("data-slug");
+        if (!slug) return;
+        
+        e.preventDefault();
+        
+        var url = "";
+        if (btn.classList.contains("qty-plus-btn")) {
+          url = '/cart/api/add/' + slug + '/';
+        } else if (btn.classList.contains("qty-minus-btn")) {
+          url = '/cart/api/remove-single/' + slug + '/';
+        } else if (btn.classList.contains("summary-remove-btn")) {
+          url = '/cart/api/remove/' + slug + '/';
+        } else {
+          return; // Not a quantity or remove button
+        }
+        
+        // Show loading inside container briefly
+        summaryContainer.style.opacity = "0.6";
+        
+        fetch(url)
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            summaryContainer.style.opacity = "1";
+            renderSummary(data);
+            if (window.updateCartUI) {
+              window.updateCartUI(data);
+            }
+          })
+          .catch(function(err) {
+            summaryContainer.style.opacity = "1";
+            console.error("Error updating item inside summary:", err);
+          });
+      });
+    }
+  });
+</script>
+
+{% endblock content %}

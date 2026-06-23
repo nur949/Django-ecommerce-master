@@ -1,0 +1,330 @@
+{% extends 'base.html' %} 
+{% load static %} 
+{% load crispy_forms_tags %}
+
+{% block extra_head %}
+<style>
+#stripeBtnLabel {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 16px;
+  font-variant: normal;
+  padding: 0;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 500;
+  display: block;
+}
+#stripeBtn {
+  border: none;
+  border-radius: 4px;
+  outline: none;
+  text-decoration: none;
+  color: #fff;
+  background: #32325d;
+  white-space: nowrap;
+  display: inline-block;
+  height: 40px;
+  line-height: 40px;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-decoration: none;
+  -webkit-transition: all 150ms ease;
+  transition: all 150ms ease;
+  float: left;
+  width: 100%
+}
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
+  background-color: #43458b;
+}
+.stripe-form {
+  padding: 5px 30px;
+}
+#card-errors {
+  height: 20px;
+  padding: 4px 0;
+  color: #fa755a;
+}
+.stripe-form-row {
+  width: 100%;
+  float: left;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+/**
+ * The CSS shown here will not be introduced in the Quickstart guide, but shows
+ * how you can use CSS to style your Element's container.
+ */
+.StripeElement {
+  box-sizing: border-box;
+  height: 40px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 #e6ebf1;
+  -webkit-transition: box-shadow 150ms ease;
+  transition: box-shadow 150ms ease;
+}
+.StripeElement--focus {
+  box-shadow: 0 1px 3px 0 #cfd7df;
+}
+.StripeElement--invalid {
+  border-color: #fa755a;
+}
+.StripeElement--webkit-autofill {
+  background-color: #fefde5 !important;
+}
+.current-card-form {
+  display: none;
+}
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+
+
+   <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+      .form-control {
+    display: block;
+    width: 100%;
+    height: calc(1.5em + .75rem + 2px);
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da !important;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+
+    </style>
+  
+ 
+    <div class="container" style="margin-top: 50px;">
+
+
+  <div class="row">
+
+
+    <div class="col-md-8 order-md-1 card" >
+    	<h4 class="mb-3" style=" margin-top: 26px;">Payment form</h4>
+    
+          <script src="https://js.stripe.com/v3/"></script>
+            {% if payment_option == 'stripe' %}
+              {% if card %}
+                <div style="padding: 5px 30px;">
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" name="use_default_card" id="use_default_card">
+                    <label class="custom-control-label" for="use_default_card">Use default card:
+                      **** **** **** {{ card.last4 }} 
+                    <span>Exp: {{ card.exp_month }}/{{ card.exp_year }}</span></label>
+                  </div>
+                </div>
+              {% endif %}
+
+              <div class="current-card-form">
+                <form action="." method="post" class="stripe-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="use_default" value="true">
+                    <div class="stripe-form-row">
+                      <button id="stripeBtn">Submit Payment</button>
+                    </div>
+                    <div id="card-errors" role="alert"></div>
+                </form>
+              </div>
+
+              <div class="new-card-form">
+                <form action="." method="post" class="stripe-form" id="stripe-form">
+                    {% csrf_token %}
+                    <div class="stripe-form-row" id="creditCard">
+                        <label for="card-element" id="stripeBtnLabel">
+                            Credit or debit card
+                        </label>
+                        <div id="card-element" class="StripeElement StripeElement--empty"></div>
+                    </div>
+                    <div class="stripe-form-row">
+                      <button id="stripeBtn">Submit Payment</button>
+                    </div>
+                    <div class="stripe-form-row">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" name="save" id="save_card_info">
+                        <label class="custom-control-label" for="save_card_info">Save for future purchases</label>
+                      </div>
+                    </div>
+                    <div id="card-errors" role="alert"></div>
+                </form>
+              </div>
+            {% elif payment_option == 'mfs' %}
+              <!-- MFS (bKash/Nagad/Rocket) payment form -->
+              <div class="mfs-payment-form p-4">
+                <div class="text-center mb-4">
+                  <h5 class="text-primary font-weight-bold">Mobile Financial Services (MFS)</h5>
+                  <p class="text-muted small">Please send <strong>৳{{ order.get_total }}</strong> to our merchant number and enter the Transaction ID below.</p>
+                </div>
+                
+                <div class="alert alert-info text-center" style="font-size: 0.95rem; line-height: 1.6;">
+                  <strong>Merchant Accounts (Payment / Cash-In):</strong><br>
+                  bKash Merchant: <span class="badge badge-danger">01700-000000</span><br>
+                  Nagad Merchant: <span class="badge badge-warning text-dark">01800-000000</span><br>
+                  Rocket Merchant: <span class="badge badge-primary">01900-000000-0</span>
+                </div>
+
+                <form action="." method="post" class="mt-4">
+                  {% csrf_token %}
+                  <div class="form-group">
+                    <label class="font-weight-bold">Select MFS Provider</label>
+                    <div class="d-flex justify-content-around my-2 py-2 border rounded bg-light">
+                      <div class="custom-control custom-radio">
+                        <input type="radio" id="mfs_bkash" name="mfs_provider" value="bKash" class="custom-control-input" checked>
+                        <label class="custom-control-label text-danger font-weight-bold" for="mfs_bkash">bKash</label>
+                      </div>
+                      <div class="custom-control custom-radio">
+                        <input type="radio" id="mfs_nagad" name="mfs_provider" value="Nagad" class="custom-control-input">
+                        <label class="custom-control-label text-warning font-weight-bold" for="mfs_nagad">Nagad</label>
+                      </div>
+                      <div class="custom-control custom-radio">
+                        <input type="radio" id="mfs_rocket" name="mfs_provider" value="Rocket" class="custom-control-input">
+                        <label class="custom-control-label text-primary font-weight-bold" for="mfs_rocket">Rocket</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-group mt-3">
+                    <label for="sender_number" class="font-weight-bold">Your MFS Account Number</label>
+                    <input type="text" id="sender_number" name="sender_number" class="form-control" placeholder="e.g. 017XXXXXXXX" required>
+                  </div>
+
+                  <div class="form-group mt-3">
+                    <label for="transaction_id" class="font-weight-bold">Transaction ID (TxnID)</label>
+                    <input type="text" id="transaction_id" name="transaction_id" class="form-control" placeholder="e.g. 9B3C2D8E1A" required style="text-transform: uppercase;">
+                  </div>
+
+                  <hr class="mb-4">
+                  <button type="submit" class="btn btn-success btn-lg btn-block">Verify & Complete Order</button>
+                </form>
+              </div>
+            {% else %}
+              <div class="p-4 text-center">
+                <p class="text-danger">Invalid payment option selected.</p>
+                <a href="{% url 'orders:checkout' %}" class="btn btn-primary">Go back to Checkout</a>
+              </div>
+            {% endif %}
+    </div>
+
+    {% include "order_snippet.html" %}
+
+  </div>
+
+  <footer class="my-5 pt-5 text-muted text-center text-small">
+    <p class="mb-1">&copy; 2017-2026 E-Commerce Bangladesh</p>
+    <ul class="list-inline">
+      <li class="list-inline-item"><a href="#">Privacy</a></li>
+      <li class="list-inline-item"><a href="#">Terms</a></li>
+      <li class="list-inline-item"><a href="#">Support</a></li>
+    </ul>
+  </footer>
+</div>
+{% endblock content %}
+
+
+{% block extra_scripts %}
+{% if payment_option == 'stripe' %}
+<script nonce="">  // Create a Stripe client.
+  var stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+  // Create an instance of Elements.
+  var elements = stripe.elements();
+  // Custom styling can be passed to options when creating an Element.
+  var style = {
+    base: {
+      color: '#32325d',
+      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+      fontSmoothing: 'antialiased',
+      fontSize: '16px',
+      '::placeholder': {
+        color: '#aab7c4'
+      }
+    },
+    invalid: {
+      color: '#fa755a',
+      iconColor: '#fa755a'
+    }
+  };
+  // Create an instance of the card Element.
+  var card = elements.create('card', {style: style});
+  // Add an instance of the card Element into the `card-element` <div>.
+  card.mount('#card-element');
+  // Handle real-time validation errors from the card Element.
+  card.addEventListener('change', function(event) {
+    var displayError = document.getElementById('card-errors');
+    if (event.error) {
+      displayError.textContent = event.error.message;
+    } else {
+      displayError.textContent = '';
+    }
+  });
+  // Handle form submission.
+  var form = document.getElementById('stripe-form');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    stripe.createToken(card).then(function(result) {
+      if (result.error) {
+        // Inform the user if there was an error.
+        var errorElement = document.getElementById('card-errors');
+        errorElement.textContent = result.error.message;
+      } else {
+        // Send the token to your server.
+        stripeTokenHandler(result.token);
+      }
+    });
+  });
+  // Submit the form with the token ID.
+  function stripeTokenHandler(token) {
+    var form = document.getElementById('stripe-form');
+    var hiddenInput = document.createElement('input');
+    hiddenInput.setAttribute('type', 'hidden');
+    hiddenInput.setAttribute('name', 'stripeToken');
+    hiddenInput.setAttribute('value', token.id);
+    form.appendChild(hiddenInput);
+    form.submit();
+  }
+  
+  var currentCardForm = $('.current-card-form');
+  var newCardForm = $('.new-card-form');
+  var use_default_card = document.querySelector("input[name=use_default_card]");
+  if (use_default_card) {
+    use_default_card.addEventListener('change', function() {
+      if (this.checked) {
+        newCardForm.hide();
+        currentCardForm.show()
+      } else {
+        newCardForm.show();
+        currentCardForm.hide()
+      }
+    })
+  }
+</script>
+{% endif %}
+{% endblock extra_scripts %}

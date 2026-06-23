@@ -1,0 +1,245 @@
+{% load category_template_tags %}
+{% get_categories as categories %}
+
+<style>
+	[x-cloak] {
+		display: none !important;
+	}
+
+	/* Modern Sidebar Filter Styling */
+	/* Filter Sidebar Styling */
+	.filter-sidebar {
+		background: #ffffff;
+		border: 1px solid #e2e8f0;
+		border-radius: 16px;
+		padding: 25px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+		margin-bottom: 30px;
+	}
+	@media (min-width: 768px) {
+		.filter-sidebar {
+			position: -webkit-sticky;
+			position: sticky;
+			top: 130px; /* Offset under fixed header */
+			align-self: flex-start;
+			max-height: calc(100vh - 160px);
+			overflow-y: auto;
+		}
+	}
+	.filter-sidebar::-webkit-scrollbar {
+		width: 6px;
+	}
+	.filter-sidebar::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.filter-sidebar::-webkit-scrollbar-thumb {
+		background: #cbd5e0;
+		border-radius: 3px;
+	}
+	.filter-sidebar::-webkit-scrollbar-thumb:hover {
+		background: #a0aec0;
+	}
+	.filter-group {
+		border-bottom: 1.5px solid #edf2f7;
+		padding-bottom: 20px;
+		margin-bottom: 20px;
+	}
+	.filter-group:last-of-type {
+		border-bottom: none;
+		padding-bottom: 0;
+		margin-bottom: 0;
+	}
+	.filter-title-sub {
+		font-size: 14px;
+		font-weight: 700;
+		color: #1a202c;
+		margin-bottom: 15px;
+		letter-spacing: -0.2px;
+		text-transform: uppercase;
+	}
+	.filter-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.filter-checkbox-label, .filter-radio-label {
+		display: flex;
+		align-items: center;
+		font-size: 14px;
+		color: #4a5568;
+		cursor: pointer;
+		user-select: none;
+		margin-bottom: 0 !important;
+	}
+	.filter-checkbox-label input, .filter-radio-label input {
+		margin-right: 10px;
+		width: 16px;
+		height: 16px;
+		accent-color: #007bff;
+		cursor: pointer;
+	}
+	.filter-search-wrapper {
+		position: relative;
+	}
+	.filter-search-input {
+		height: 40px;
+		padding: 0 35px 0 15px !important;
+		border-radius: 10px !important;
+		border: 1.5px solid #e2e8f0 !important;
+		font-size: 13.5px !important;
+	}
+	.filter-search-input:focus {
+		border-color: #007bff !important;
+		box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12) !important;
+	}
+	.search-icon {
+		position: absolute;
+		right: 12px;
+		top: 50%;
+		transform: translateY(-50%);
+		color: #a0aec0;
+		font-size: 14px;
+	}
+	.btn-clear-filters {
+		background: #f7fafc;
+		border: 1px solid #e2e8f0;
+		color: #4a5568;
+		border-radius: 10px;
+		padding: 10px;
+		width: 100%;
+		font-size: 13.5px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		margin-top: 10px;
+	}
+	.btn-clear-filters:hover {
+		background: #007bff;
+		color: #ffffff;
+		border-color: #007bff;
+	}
+
+	/* Premium Range Slider styling */
+	.range-slider-container {
+		position: relative;
+		width: 100%;
+		height: 6px;
+		margin-top: 15px;
+		margin-bottom: 25px;
+	}
+	.range-slider-track {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background-color: #e2e8f0;
+		border-radius: 3px;
+		z-index: 1;
+	}
+	.range-slider-highlight {
+		position: absolute;
+		height: 100%;
+		background-color: #007bff;
+		border-radius: 3px;
+		z-index: 2;
+	}
+	.range-slider-inputs {
+		position: relative;
+	}
+	.range-slider-inputs input[type="range"] {
+		position: absolute;
+		width: 100%;
+		height: 6px;
+		top: -26px;
+		background: none;
+		pointer-events: none;
+		-webkit-appearance: none;
+		appearance: none;
+		z-index: 3;
+	}
+	/* Webkit browser styling */
+	.range-slider-inputs input[type="range"]::-webkit-slider-thumb {
+		height: 18px;
+		width: 18px;
+		border-radius: 50%;
+		background: #ffffff;
+		border: 2px solid #007bff;
+		cursor: pointer;
+		pointer-events: auto;
+		-webkit-appearance: none;
+		box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+		transition: transform 0.1s ease;
+	}
+	.range-slider-inputs input[type="range"]::-webkit-slider-thumb:hover {
+		transform: scale(1.15);
+	}
+	/* Firefox browser styling */
+	.range-slider-inputs input[type="range"]::-moz-range-thumb {
+		height: 18px;
+		width: 18px;
+		border-radius: 50%;
+		background: #ffffff;
+		border: 2px solid #007bff;
+		cursor: pointer;
+		pointer-events: auto;
+		box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+		transition: transform 0.1s ease;
+	}
+	.range-slider-inputs input[type="range"]::-moz-range-thumb:hover {
+		transform: scale(1.15);
+	}
+	.range-slider-values {
+		display: flex;
+		justify-content: space-between;
+		font-size: 13px;
+		font-weight: 700;
+		color: #4a5568;
+		margin-top: 15px;
+	}
+</style>
+
+<div class="filter-sidebar">
+	<!-- Category Filter -->
+	<div class="filter-group">
+		<h5 class="filter-title-sub">Categories</h5>
+		<ul class="filter-list">
+			{% for category in categories %}
+			<li>
+				<label class="filter-checkbox-label">
+					<input type="checkbox" value="{{ category.slug }}" x-model="selectedCategories">
+					{{ category.title }}
+				</label>
+			</li>
+			{% endfor %}
+		</ul>
+	</div>
+
+	<!-- Price Filter Slider -->
+	<div class="filter-group">
+		<h5 class="filter-title-sub">Price Range</h5>
+		
+		<div class="range-slider-container">
+			<div class="range-slider-track"></div>
+			<div class="range-slider-highlight" :style="'left: ' + minPercent + '%; right: ' + (100 - maxPercent) + '%;'"></div>
+		</div>
+		
+		<div class="range-slider-inputs">
+			<input type="range" :min="minLimit" :max="maxLimit" step="1" x-model="minVal" @input="updateMin()">
+			<input type="range" :min="minLimit" :max="maxLimit" step="1" x-model="maxVal" @input="updateMax()">
+		</div>
+		
+		<div class="range-slider-values">
+			<span>Min: ৳<span x-text="minVal"></span></span>
+			<span>Max: ৳<span x-text="maxVal"></span></span>
+		</div>
+	</div>
+
+	<!-- Reset Button -->
+	<button class="btn-clear-filters" @click="clearAll()" x-show="selectedCategories.length > 0 || minVal !== minLimit || maxVal !== maxLimit || searchQuery !== ''" x-cloak>
+		Clear All Filters
+	</button>
+</div>
+
+

@@ -1,0 +1,1887 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cart_template_tags %}
+{% block head_title %}My Profile{% endblock %}
+
+{% block extra_head %}
+<!-- Google Fonts for premium typography -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    --primary-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --text-dark: #0f172a;
+    --text-body: #334155;
+    --text-muted: #64748b;
+    --bg-light: #f8fafc;
+    --border-color: #e2e8f0;
+  }
+  
+  [x-cloak] { display: none !important; }
+
+  .profile-card,
+  .order-card,
+  .db-stat-card,
+  .db-info-card,
+  .table,
+  .form-group,
+  .btn {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  }
+
+  /* Page Wrapper and Container Spacing */
+  .p-t-60 { padding-top: 50px !important; }
+  .p-b-60 { padding-bottom: 50px !important; }
+
+  /* Premium Card Styles */
+  .profile-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+    border: 1px solid #f1f5f9;
+    padding: 35px 24px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .profile-card:hover {
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+  }
+  .profile-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #3b82f6, #6366f1);
+  }
+
+  /* Avatar Styling */
+  .profile-avatar-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px auto;
+    padding: 4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+  }
+  .profile-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #ffffff;
+  }
+
+  /* Navigation Sidebar Tabs */
+  .profile-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    color: var(--text-body);
+    font-weight: 600;
+    font-size: 14.5px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none !important;
+    cursor: pointer;
+    background-color: transparent;
+    border: 1px solid transparent;
+  }
+  .profile-nav-link span {
+    display: flex;
+    align-items: center;
+  }
+  .profile-nav-link i {
+    margin-right: 14px;
+    font-size: 18px;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+  }
+  .profile-nav-link:hover,
+  .profile-nav-link:hover span,
+  .profile-nav-link:hover i {
+    color: var(--text-dark) !important;
+  }
+  .profile-nav-link:hover {
+    background-color: var(--bg-light);
+    border-color: #f1f5f9;
+  }
+  .profile-nav-link.active,
+  .profile-nav-link.active span,
+  .profile-nav-link.active i {
+    color: #1d4ed8 !important;
+  }
+  .profile-nav-link.active {
+    background: linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%);
+    border-color: #eff6ff;
+  }
+  
+  /* Sidebar Nav Badge */
+  .nav-badge {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  .profile-nav-link:hover .nav-badge {
+    background-color: #cbd5e1;
+    color: var(--text-dark);
+  }
+  .profile-nav-link.active .nav-badge {
+    background-color: var(--primary-color);
+    color: #ffffff;
+  }
+
+  /* Dashboard Stats Grid */
+  .db-stat-card {
+    border-radius: 16px;
+    padding: 24px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+  }
+  .db-stat-card:hover {
+    transform: translateY(-4px);
+  }
+  .db-stat-card.blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3), 0 8px 10px -6px rgba(59, 130, 246, 0.3);
+  }
+  .db-stat-card.green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3), 0 8px 10px -6px rgba(16, 185, 129, 0.3);
+  }
+  .db-stat-card.pink {
+    background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+    box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.3), 0 8px 10px -6px rgba(244, 63, 94, 0.3);
+  }
+  .db-stat-card::before {
+    content: '';
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    top: -40px;
+    right: -40px;
+    z-index: 1;
+  }
+  .db-stat-val {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 2px;
+    z-index: 2;
+    position: relative;
+  }
+  .db-stat-lbl {
+    font-size: 11.5px;
+    font-weight: 700;
+    opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    z-index: 2;
+    position: relative;
+  }
+  .stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+  }
+  .stat-icon-wrapper i {
+    font-size: 20px;
+    color: #ffffff;
+  }
+
+  /* Info Cards (Account summary / Timeline) */
+  .db-info-card {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 16px;
+    padding: 28px;
+    height: 100%;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.01);
+  }
+  .db-info-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+  }
+
+  /* Account summary list details */
+  .db-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .db-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .db-info-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background-color: var(--bg-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #f1f5f9;
+  }
+  .db-info-icon-box i {
+    font-size: 14px;
+  }
+  .db-info-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 2px;
+  }
+  .db-info-value {
+    font-size: 14px;
+    color: #334155;
+    font-weight: 600;
+  }
+
+  /* Timeline layout for activity */
+  .timeline-container {
+    position: relative;
+    padding-left: 20px;
+  }
+  .timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background-color: var(--border-color);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 18px;
+  }
+  .timeline-item:last-child {
+    margin-bottom: 0;
+  }
+  .timeline-badge-dot {
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #cbd5e1;
+    border: 2.5px solid #ffffff;
+    box-shadow: 0 0 0 1.5px #cbd5e1;
+  }
+  .timeline-badge-dot.placed {
+    background-color: var(--primary-color);
+    box-shadow: 0 0 0 1.5px #dbeafe;
+  }
+  .timeline-badge-dot.shipped {
+    background-color: #0ea5e9;
+    box-shadow: 0 0 0 1.5px #e0f2fe;
+  }
+  .timeline-badge-dot.delivered {
+    background-color: var(--success-color);
+    box-shadow: 0 0 0 1.5px #d1fae5;
+  }
+  .timeline-content {
+    background-color: var(--bg-light);
+    border: 1px solid #edf2f7;
+    padding: 12px 16px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  .timeline-content:hover {
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+    border-color: var(--border-color);
+  }
+  .timeline-ref {
+    font-size: 13.5px;
+    color: var(--text-dark);
+  }
+  .timeline-price {
+    font-size: 13.5px;
+    color: var(--primary-color);
+  }
+
+  /* Form details style */
+  .form-group label {
+    font-weight: 600;
+    color: var(--text-body);
+    font-size: 13.5px;
+    margin-bottom: 8px;
+    display: inline-block;
+  }
+  .form-control,
+  textarea.form-control,
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"] {
+    border-radius: 10px !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 12px 18px !important;
+    font-size: 14px !important;
+    color: var(--text-dark) !important;
+    background-color: #ffffff !important;
+    transition: all 0.2s ease !important;
+    width: 100%;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .form-control:focus,
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="tel"]:focus,
+  textarea:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12) !important;
+    background-color: #ffffff !important;
+  }
+  textarea.form-control {
+    min-height: 100px !important;
+    resize: vertical;
+  }
+
+  /* Custom picture upload field */
+  .custom-file-upload {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg-light);
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-top: 5px;
+  }
+  .custom-file-upload:hover {
+    border-color: var(--primary-color);
+    background: #eff6ff;
+  }
+  .custom-file-upload input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .custom-file-icon {
+    font-size: 28px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    transition: color 0.2s ease;
+  }
+  .custom-file-upload:hover .custom-file-icon {
+    color: var(--primary-color);
+  }
+  .custom-file-text {
+    font-size: 13.5px;
+    color: var(--text-body);
+    font-weight: 600;
+  }
+  .custom-file-selected {
+    font-size: 12.5px;
+    color: var(--success-color);
+    font-weight: 700;
+    margin-top: 5px;
+    display: none;
+  }
+
+  .btn-save-profile {
+    background: var(--primary-gradient) !important;
+    border: none !important;
+    border-radius: 30px !important;
+    padding: 14px 45px !important;
+    font-weight: 700 !important;
+    font-size: 14.5px !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2) !important;
+    transition: all 0.25s ease !important;
+  }
+  .btn-save-profile:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3) !important;
+  }
+
+  /* Order History Accordion Card Style */
+  .order-card {
+    border: 1px solid #f1f5f9;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.01);
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+  }
+  .order-card:hover {
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.04);
+    border-color: #e2e8f0;
+  }
+  .order-header {
+    background-color: #ffffff;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    position: relative;
+    padding-right: 50px !important;
+    transition: background-color 0.2s ease;
+  }
+  .order-header:hover {
+    background-color: var(--bg-light);
+  }
+  .order-header::after {
+    content: "\f107";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 18px;
+    color: var(--text-muted);
+  }
+  .order-header[aria-expanded="true"]::after {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--primary-color);
+  }
+  .order-details {
+    padding: 24px;
+    background-color: var(--bg-light);
+  }
+
+  /* Tracker style */
+  .order-tracker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    padding: 10px 0;
+    max-width: 500px;
+    margin: 0 auto 25px auto;
+  }
+  .tracker-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+    position: relative;
+  }
+  .tracker-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 1px #cbd5e1;
+  }
+  .tracker-step.active .tracker-circle {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px var(--primary-color), 0 4px 10px rgba(37, 99, 235, 0.25);
+  }
+  .tracker-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tracker-step.active .tracker-label {
+    color: var(--text-dark);
+  }
+  .tracker-line {
+    flex-grow: 1;
+    height: 3px;
+    background-color: #e2e8f0;
+    margin: -18px 8px 0 8px;
+    z-index: 1;
+    transition: all 0.3s ease;
+  }
+  .tracker-line.active {
+    background-color: var(--primary-color);
+  }
+
+  /* Refund Banner Style */
+  .refund-status-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .refund-status-strip.pending {
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+  }
+  .refund-status-strip.refunded {
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+  }
+  .refund-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .refund-status-strip.pending .refund-icon-box {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+  .refund-status-strip.refunded .refund-icon-box {
+    background-color: #e2e8f0;
+    color: #475569;
+  }
+
+  /* Status Badges Dot style */
+  .badge-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 6px 12px !important;
+    border-radius: 30px !important;
+    text-transform: capitalize;
+  }
+  .badge-dot::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .badge-dot-placed {
+    background-color: #e0e7ff !important;
+    color: #4338ca !important;
+  }
+  .badge-dot-placed::before {
+    background-color: #4f46e5;
+  }
+  .badge-dot-shipped {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+  }
+  .badge-dot-shipped::before {
+    background-color: #0ea5e9;
+  }
+  .badge-dot-delivered {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+  }
+  .badge-dot-delivered::before {
+    background-color: var(--success-color);
+  }
+  .badge-dot-pending {
+    background-color: #fffbeb !important;
+    color: #b45309 !important;
+  }
+  .badge-dot-pending::before {
+    background-color: var(--warning-color);
+  }
+  .badge-dot-refunded {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+  }
+  .badge-dot-refunded::before {
+    background-color: var(--text-muted);
+  }
+
+  .copy-btn {
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: var(--text-body);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-left: 8px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .copy-btn:hover {
+    background-color: #eff6ff;
+    color: var(--primary-color);
+    border-color: #bfdbfe;
+  }
+
+  /* Order details table layout inside collapse */
+  .order-table th {
+    font-weight: 700;
+    color: var(--text-body);
+    background-color: #f1f5f9;
+    border: none;
+    font-size: 12.5px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 12px 18px;
+  }
+  .order-table td {
+    padding: 16px 18px;
+    border-color: #edf2f7;
+    background-color: #ffffff;
+  }
+  .order-item-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  }
+
+  /* Table styling for Wishlist & Summary inside panels */
+  .table {
+    border-collapse: separate !important;
+    border-spacing: 0 10px !important;
+    margin-top: -10px !important;
+  }
+  .table thead th {
+    border: none !important;
+    color: var(--text-muted) !important;
+    font-weight: 700 !important;
+    font-size: 12.5px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 12px 18px !important;
+  }
+  .table tbody tr {
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.015) !important;
+    border: 1px solid #f1f5f9 !important;
+    transition: all 0.25s ease !important;
+  }
+  .table tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04) !important;
+  }
+  .table tbody td, .table tbody th {
+    background: #ffffff !important;
+    border: none !important;
+    border-top: 1px solid #f1f5f9 !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 16px 18px !important;
+  }
+  .table tbody td:first-child, .table tbody th:first-child {
+    border-left: 1px solid #f1f5f9 !important;
+    border-top-left-radius: 12px !important;
+    border-bottom-left-radius: 12px !important;
+  }
+  .table tbody td:last-child {
+    border-right: 1px solid #f1f5f9 !important;
+    border-top-right-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
+  }
+  .wishlist-table-img, .summary-table-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #f1f5f9;
+  }
+
+  .summary-qty-container {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg-light);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 4px;
+  }
+  .summary-qty-btn {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: var(--text-body);
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 11px;
+    transition: all 0.2s ease;
+  }
+  .summary-qty-btn:hover {
+    color: var(--primary-color);
+    border-color: #cbd5e1;
+    background-color: var(--bg-light);
+  }
+  .summary-qty-val {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-dark);
+    padding: 0 12px;
+    min-width: 32px;
+    text-align: center;
+  }
+  
+  .summary-remove-btn, .wishlist-remove-btn {
+    background: #fee2e2;
+    border: none;
+    color: var(--danger-color);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .summary-remove-btn:hover, .wishlist-remove-btn:hover {
+    background: #fca5a5;
+    color: #b91c1c;
+  }
+
+  /* Toast Notification alerts */
+  #copy-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(17, 17, 17, 0.95);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    padding: 14px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    z-index: 10500;
+    font-size: 13.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-left: 4px solid #10b981;
+    animation: toastFadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes toastFadeIn {
+    from { transform: translateY(20px) scale(0.9); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+
+
+  @media (max-width: 991px) {
+    .db-stat-card {
+      padding: 18px 15px !important;
+    }
+    .db-stat-val {
+      font-size: 24px !important;
+    }
+    .db-stat-lbl {
+      font-size: 11px !important;
+    }
+    .stat-icon-wrapper {
+      width: 38px !important;
+      height: 38px !important;
+    }
+    .stat-icon-wrapper i {
+      font-size: 16px !important;
+    }
+
+    .p-t-60 { padding-top: 25px !important; }
+    .p-b-60 { padding-bottom: 30px !important; }
+    
+    /* Horizontal 2-Column Grid on Mobile/Tablet */
+    .profile-card .text-left {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 8px !important;
+      padding-bottom: 0 !important;
+      margin-top: 15px !important;
+    }
+    .profile-nav-link {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      padding: 10px 8px !important;
+      margin-bottom: 0 !important;
+      font-size: 12px !important;
+      border-radius: 12px !important;
+      width: 100% !important;
+      white-space: nowrap !important;
+      border: 1px solid #f1f5f9 !important;
+      background-color: #ffffff !important;
+      height: 44px !important;
+    }
+    .profile-nav-link span {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      font-size: 12px !important;
+    }
+    .profile-nav-link i {
+      margin-right: 0 !important;
+      font-size: 14px !important;
+    }
+    .profile-nav-link.active::after {
+      display: none !important;
+    }
+    .nav-badge {
+      font-size: 9.5px !important;
+      padding: 1px 5px !important;
+    }
+    .profile-nav-link.active,
+    .profile-nav-link.active span,
+    .profile-nav-link.active i {
+      color: #ffffff !important;
+    }
+    .profile-nav-link.active {
+      background: var(--primary-gradient) !important;
+      border-color: var(--primary-color) !important;
+    }
+    .profile-nav-link.active .nav-badge {
+      background-color: rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
+    }
+
+
+    /* Accordions details styling on mobile */
+    .order-header {
+      padding-right: 40px !important;
+      padding: 16px !important;
+    }
+    .order-header::after {
+      right: 15px;
+      font-size: 15px;
+    }
+    .order-header .row {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10px !important;
+    }
+    .order-header .col-md-4, 
+    .order-header .col-md-3, 
+    .order-header .col-md-2 {
+      padding: 0 !important;
+      text-align: left !important;
+    }
+    .order-header .col-md-2.text-right {
+      text-align: left !important;
+      grid-column: span 2 !important;
+      margin-top: 5px !important;
+    }
+
+    /* Table layout on mobile transformed to beautiful cards */
+    .table-wishlist thead, .table-summary thead {
+      display: none !important;
+    }
+    
+    .wishlist-product-row, .summary-product-row {
+      display: grid !important;
+      grid-template-columns: 90px 1fr !important;
+      grid-template-areas: 
+        "image name"
+        "image price"
+        "image action" !important;
+      gap: 8px 16px !important;
+      padding: 16px !important;
+      border-radius: 16px !important;
+      border: 1px solid #edf2f7 !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.01) !important;
+      margin-bottom: 15px !important;
+    }
+
+    .summary-product-row {
+      grid-template-areas: 
+        "image name"
+        "image price"
+        "image qty"
+        "action action" !important;
+    }
+
+    .table-wishlist td, .table-summary td {
+      display: block !important;
+      border: none !important;
+      padding: 0 !important;
+      width: auto !important;
+      text-align: left !important;
+    }
+
+    .table-wishlist th[scope="row"], .table-summary th[scope="row"] {
+      display: none !important;
+    }
+
+    /* Column grid associations */
+    .table-wishlist td:nth-of-type(1), .table-summary td:nth-of-type(1) {
+      grid-area: image !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    .wishlist-table-img, .summary-table-img {
+      width: 80px !important;
+      height: 80px !important;
+      margin: 0 !important;
+    }
+
+    .table-wishlist td:nth-of-type(2), .table-summary td:nth-of-type(2) {
+      grid-area: name !important;
+      font-weight: 700 !important;
+    }
+    .table-wishlist td:nth-of-type(2) a, .table-summary td:nth-of-type(2) a {
+      font-size: 14.5px !important;
+      line-height: 1.3 !important;
+      display: block !important;
+    }
+
+    .table-wishlist td:nth-of-type(3), .table-summary td:nth-of-type(3) {
+      grid-area: price !important;
+      font-size: 14px !important;
+    }
+
+    .table-wishlist td:nth-of-type(4) {
+      grid-area: action !important;
+      border-top: 1px solid #f1f5f9 !important;
+      padding-top: 10px !important;
+      margin-top: 5px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+    .table-wishlist td:nth-of-type(4) .d-flex {
+      width: 100% !important;
+      justify-content: space-between !important;
+    }
+    .table-wishlist td:nth-of-type(4) .wishlist-remove-btn {
+      margin-left: 0 !important;
+    }
+
+    .table-summary td:nth-of-type(4) {
+      grid-area: qty !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    
+    .table-summary td:nth-of-type(5) {
+      grid-area: action !important;
+      border-top: 1px solid #f1f5f9 !important;
+      padding-top: 10px !important;
+      margin-top: 5px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+
+    /* Checkout & checkout total alignment on mobile */
+    .table-summary td[colspan="6"] {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      padding: 15px 0 !important;
+    }
+    .table-summary td[colspan="6"] .btn {
+      width: 100% !important;
+      float: none !important;
+      margin: 0 !important;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+    .table-summary .coupon-row td, .table-summary tr:nth-last-child(2) td {
+      display: flex !important;
+      justify-content: space-between !important;
+      padding: 12px 15px !important;
+      border-bottom: 1px solid #edf2f7 !important;
+    }
+  }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+
+<div class="container p-t-60 p-b-60" 
+     x-data="{ activeTab: window.location.hash || '#dashboard' }" 
+     @hashchange.window="activeTab = window.location.hash || '#dashboard'">
+  <div class="row">
+    <!-- Sidebar Navigation -->
+    <div class="col-lg-4 col-12">
+      <div class="profile-card text-center">
+        <div class="profile-avatar-container">
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" class="profile-avatar" alt="Avatar">
+          {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=0D8ABC&color=fff&size=128" class="profile-avatar" alt="Avatar">
+          {% endif %}
+        </div>
+        <h4 class="font-weight-bold m-b-5" style="color: #1a202c;">
+          {% if request.user.get_full_name %}
+            {{ request.user.get_full_name }}
+          {% else %}
+            {{ request.user.username }}
+          {% endif %}
+        </h4>
+        <p class="text-muted m-b-20">{{ request.user.email }}</p>
+        
+        <hr class="m-t-20 m-b-20" style="border-top: 1px solid #f1f5f9;">
+        
+        <div class="text-left">
+          <a href="#dashboard" class="profile-nav-link" :class="{ 'active': activeTab === '#dashboard' }" @click="activeTab = '#dashboard'; window.location.hash = '#dashboard'">
+            <span><i class="fas fa-tachometer-alt"></i> Dashboard</span>
+          </a>
+          <a href="#profile" class="profile-nav-link" :class="{ 'active': activeTab === '#profile' }" @click="activeTab = '#profile'; window.location.hash = '#profile'">
+            <span><i class="fas fa-user"></i> Profile Details</span>
+          </a>
+          <a href="#orders" class="profile-nav-link" :class="{ 'active': activeTab === '#orders' }" @click="activeTab = '#orders'; window.location.hash = '#orders'">
+            <span><i class="fas fa-shopping-bag"></i> Order History</span>
+            <span class="nav-badge">{{ orders|length }}</span>
+          </a>
+          <a href="#cart" class="profile-nav-link" :class="{ 'active': activeTab === '#cart' }" @click="activeTab = '#cart'; window.location.hash = '#cart'">
+            <span><i class="fas fa-shopping-cart"></i> Order Summary</span>
+            <span class="nav-badge">{% cart_item_count request %}</span>
+          </a>
+          <a href="#wishlist" class="profile-nav-link" :class="{ 'active': activeTab === '#wishlist' }" @click="activeTab = '#wishlist'; window.location.hash = '#wishlist'">
+            <span><i class="fas fa-heart"></i> My Wishlist</span>
+            <span class="nav-badge">{{ wishlist_items|length }}</span>
+          </a>
+          <a href="{% url 'account_logout' %}" class="profile-nav-link text-danger">
+            <span><i class="fas fa-sign-out-alt"></i> Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Panel -->
+    <div class="col-lg-8 col-12" x-show="activeTab === '#dashboard'" x-transition x-cloak>
+      <div class="profile-card" style="padding: 25px;">
+        <h3 class="m-b-5" style="font-weight: 700; color: #1a202c;">Dashboard</h3>
+        <p class="text-muted m-b-25">Welcome back to your account dashboard. You can view your recent activity and update account settings.</p>
+
+        <!-- Stats Grid -->
+        <div class="row m-b-30">
+          <div class="col-md-4 col-sm-6 m-b-15">
+            <div class="db-stat-card blue">
+              <div>
+                <div class="db-stat-val">{{ orders|length }}</div>
+                <div class="db-stat-lbl">Total Orders</div>
+              </div>
+              <div class="stat-icon-wrapper">
+                <i class="fas fa-shopping-bag"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 col-sm-6 m-b-15">
+            <div class="db-stat-card green">
+              <div>
+                <div class="db-stat-val">{% cart_item_count request %}</div>
+                <div class="db-stat-lbl">Items in Cart</div>
+              </div>
+              <div class="stat-icon-wrapper">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 col-sm-6 m-b-15">
+            <div class="db-stat-card pink">
+              <div>
+                <div class="db-stat-val">{{ wishlist_items|length }}</div>
+                <div class="db-stat-lbl">Wishlist Items</div>
+              </div>
+              <div class="stat-icon-wrapper">
+                <i class="fas fa-heart"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Account Overview -->
+          <div class="col-md-6 m-b-20">
+            <div class="db-info-card">
+              <h5 class="db-info-title"><i class="fas fa-user-circle text-primary"></i> Account Summary</h5>
+              
+              <div class="db-info-list">
+                <div class="db-info-row">
+                  <div class="db-info-icon-box"><i class="fas fa-user text-primary"></i></div>
+                  <div>
+                    <div class="db-info-label">Full Name</div>
+                    <div class="db-info-value">
+                      {% if request.user.get_full_name %}
+                        {{ request.user.get_full_name }}
+                      {% else %}
+                        {{ request.user.username }}
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="db-info-row">
+                  <div class="db-info-icon-box"><i class="fas fa-envelope text-success"></i></div>
+                  <div>
+                    <div class="db-info-label">Email Address</div>
+                    <div class="db-info-value">{{ request.user.email }}</div>
+                  </div>
+                </div>
+
+                <div class="db-info-row">
+                  <div class="db-info-icon-box"><i class="fas fa-phone text-warning"></i></div>
+                  <div>
+                    <div class="db-info-label">Phone Number</div>
+                    <div class="db-info-value">
+                      {% if profile.phone_number %}
+                        {{ profile.phone_number }}
+                      {% else %}
+                        <span class="text-muted font-italic">Not provided</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="db-info-row">
+                  <div class="db-info-icon-box"><i class="fas fa-map-marker-alt text-danger"></i></div>
+                  <div>
+                    <div class="db-info-label">Billing/Shipping Address</div>
+                    <div class="db-info-value" style="font-size: 13.5px; line-height: 1.4;">
+                      {% if profile.address %}
+                        {{ profile.address }}
+                      {% else %}
+                        <span class="text-muted font-italic">Not provided</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-right m-t-20">
+                <a href="#profile" class="btn btn-outline-primary btn-sm bo-rad-20 px-3" @click="activeTab = '#profile'; window.location.hash = '#profile'">
+                  <i class="fas fa-edit"></i> Edit Details
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Orders / Timeline -->
+          <div class="col-md-6 m-b-20">
+            <div class="db-info-card">
+              <h5 class="db-info-title"><i class="fas fa-receipt text-primary"></i> Recent Activity</h5>
+              
+              {% if orders %}
+                <div class="timeline-container">
+                  {% for order in orders|slice:":3" %}
+                    <div class="timeline-item">
+                      <div class="timeline-badge-dot {% if order.received %}delivered{% elif order.being_delivered %}shipped{% else %}placed{% endif %}"></div>
+                      <div class="timeline-content">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span class="timeline-ref font-weight-bold">#{{ order.ref_code|slice:":8"|upper }}</span>
+                          <span class="timeline-price font-weight-bold">৳{{ order.get_total|floatformat:0 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center m-t-4">
+                          <span class="timeline-date text-muted small">{{ order.start_date|date:"d M, Y" }}</span>
+                          <span class="timeline-status small font-weight-bold {% if order.received %}text-success{% elif order.being_delivered %}text-info{% else %}text-primary{% endif %}">
+                            {% if order.refund_granted %}Refunded{% elif order.refund_requested %}Refund Pending{% elif order.received %}Delivered{% elif order.being_delivered %}Shipped{% else %}Placed{% endif %}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                
+                <div class="text-right m-t-20">
+                  <a href="#orders" class="btn btn-outline-primary btn-sm bo-rad-20 px-3" @click="activeTab = '#orders'; window.location.hash = '#orders'">
+                    <i class="fas fa-list"></i> View All Orders
+                  </a>
+                </div>
+              {% else %}
+                <div class="text-center py-4 text-muted">
+                  <i class="fas fa-receipt m-b-10" style="font-size: 32px; opacity: 0.5;"></i>
+                  <p class="small m-b-0">No recent orders found.</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Panel -->
+    <div class="col-lg-8 col-12" x-show="activeTab === '#profile'" x-transition x-cloak>
+      <div class="profile-card">
+        <h3 class="m-b-25" style="font-weight: 700; color: #1a202c;">Profile Details</h3>
+        
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group m-b-20">
+                <label for="id_first_name">First Name</label>
+                {{ user_form.first_name }}
+                {% if user_form.first_name.errors %}
+                  <div class="text-danger small m-t-5">{{ user_form.first_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group m-b-20">
+                <label for="id_last_name">Last Name</label>
+                {{ user_form.last_name }}
+                {% if user_form.last_name.errors %}
+                  <div class="text-danger small m-t-5">{{ user_form.last_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group m-b-20">
+                <label for="id_email">Email Address</label>
+                {{ user_form.email }}
+                {% if user_form.email.errors %}
+                  <div class="text-danger small m-t-5">{{ user_form.email.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group m-b-20">
+                <label for="id_phone_number">Phone Number</label>
+                {{ profile_form.phone_number }}
+                {% if profile_form.phone_number.errors %}
+                  <div class="text-danger small m-t-5">{{ profile_form.phone_number.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group m-b-25">
+            <label for="id_address">Billing/Shipping Address</label>
+            {{ profile_form.address }}
+            {% if profile_form.address.errors %}
+              <div class="text-danger small m-t-5">{{ profile_form.address.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group m-b-30">
+            <label>Profile Picture</label>
+            <div class="custom-file-upload">
+              <i class="fas fa-cloud-upload-alt custom-file-icon"></i>
+              <span class="custom-file-text">Choose profile photo or drag here</span>
+              <span class="custom-file-selected" id="avatar-selected-name"></span>
+              <input type="file" name="avatar" id="id_avatar" accept="image/*">
+            </div>
+            {% if profile.avatar %}
+              <div class="m-t-8 d-flex align-items-center justify-content-between">
+                <span class="small text-muted">Current: <a href="{{ profile.avatar.url }}" target="_blank" class="text-primary font-weight-bold">{{ profile.avatar.name|slice:"-25:" }}</a></span>
+              </div>
+            {% endif %}
+            {% if profile_form.avatar.errors %}
+              <div class="text-danger small m-t-5">{{ profile_form.avatar.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="text-right">
+            <button type="submit" class="btn btn-primary btn-save-profile">
+              <i class="fas fa-save m-r-5"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Order History Panel -->
+    <div class="col-lg-8 col-12" x-show="activeTab === '#orders'" x-transition x-cloak>
+      <div class="profile-card">
+        <h3 class="m-b-25" style="font-weight: 700; color: #1a202c;">Order History</h3>
+
+        {% if orders %}
+          <div id="order-accordion">
+            {% for order in orders %}
+              <div class="order-card">
+                <!-- Accordion Header -->
+                <div class="order-header" id="heading-{{ order.id }}" data-toggle="collapse" data-target="#collapse-{{ order.id }}" aria-expanded="false" aria-controls="collapse-{{ order.id }}">
+                  <div class="row align-items-center">
+                    <div class="col-md-4">
+                      <div class="small text-muted font-weight-bold">ORDER ID</div>
+                      <div class="font-weight-bold text-dark">
+                        #{{ order.ref_code|slice:":8"|upper }}...
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="small text-muted font-weight-bold">DATE</div>
+                      <div class="text-secondary" style="font-size: 14px;">{{ order.start_date|date:"d M, Y" }}</div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="small text-muted font-weight-bold">TOTAL</div>
+                      <div class="font-weight-bold text-primary">৳{{ order.get_total|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-md-2 text-right">
+                      {% if order.refund_granted %}
+                        <span class="badge-dot badge-dot-refunded">Refunded</span>
+                      {% elif order.refund_requested %}
+                        <span class="badge-dot badge-dot-pending">Refund Pending</span>
+                      {% elif order.received %}
+                        <span class="badge-dot badge-dot-delivered">Delivered</span>
+                      {% elif order.being_delivered %}
+                        <span class="badge-dot badge-dot-shipped">Shipped</span>
+                      {% else %}
+                        <span class="badge-dot badge-dot-placed">Placed</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Accordion Body -->
+                <div id="collapse-{{ order.id }}" class="collapse" aria-labelledby="heading-{{ order.id }}" data-parent="#order-accordion">
+                  <div class="order-details">
+                    <!-- Tracker Progress Bar or Refund Banner -->
+                    {% if order.refund_granted or order.refund_requested %}
+                      <div class="refund-status-strip p-3 bo-rad-10 m-b-20 d-flex align-items-center gap-3 {% if order.refund_granted %}refunded{% else %}pending{% endif %}">
+                        <div class="refund-icon-box">
+                          <i class="fas {% if order.refund_granted %}fa-undo-alt{% else %}fa-history{% endif %}"></i>
+                        </div>
+                        <div>
+                          <div class="font-weight-bold" style="font-size: 14px;">
+                            {% if order.refund_granted %}Refund Processed{% else %}Refund Request Pending{% endif %}
+                          </div>
+                          <div class="small" style="opacity: 0.9;">
+                            {% if order.refund_granted %}A refund of ৳{{ order.get_total|floatformat:2 }} has been returned to your payment source.{% else %}We have received your refund request for this order and are reviewing details.{% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    {% else %}
+                      <div class="order-tracker m-b-25">
+                        <div class="tracker-step active">
+                          <div class="tracker-circle"><i class="fas fa-check"></i></div>
+                          <div class="tracker-label">Placed</div>
+                        </div>
+                        <div class="tracker-line {% if order.being_delivered or order.received %}active{% endif %}"></div>
+                        <div class="tracker-step {% if order.being_delivered or order.received %}active{% endif %}">
+                          <div class="tracker-circle">
+                            {% if order.being_delivered or order.received %}
+                              <i class="fas fa-check"></i>
+                            {% else %}
+                              <i class="fas fa-shipping-fast"></i>
+                            {% endif %}
+                          </div>
+                          <div class="tracker-label">Shipped</div>
+                        </div>
+                        <div class="tracker-line {% if order.received %}active{% endif %}"></div>
+                        <div class="tracker-step {% if order.received %}active{% endif %}">
+                          <div class="tracker-circle">
+                            {% if order.received %}
+                              <i class="fas fa-check"></i>
+                            {% else %}
+                              <i class="fas fa-home"></i>
+                            {% endif %}
+                          </div>
+                          <div class="tracker-label">Delivered</div>
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    <!-- Metadata Info -->
+                    <div class="mb-3 d-flex align-items-center flex-wrap">
+                      <span class="font-weight-bold text-muted small mr-1">Full Reference Code:</span>
+                      <span class="font-weight-bold text-dark small" id="ref-code-{{ order.id }}">{{ order.ref_code }}</span>
+                      <button class="copy-btn" onclick="copyRefCode('{{ order.ref_code }}')"><i class="far fa-copy"></i> Copy</button>
+                    </div>
+
+                    <!-- Ordered Items Table -->
+                    <div class="table-responsive m-b-20">
+                      <table class="table order-table align-middle">
+                        <thead>
+                          <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th class="text-right">Price</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for order_item in order.items.all %}
+                            <tr>
+                              <td>
+                                <div class="d-flex align-items-center">
+                                  {% if order_item.item.image %}
+                                    <img src="{{ order_item.item.image.url }}" class="order-item-img m-r-15" alt="{{ order_item.item.title }}">
+                                  {% else %}
+                                    <img src="{% static 'images/icons/icon-header-02.png' %}" class="order-item-img m-r-15" alt="">
+                                  {% endif %}
+                                  <div>
+                                    <div class="font-weight-bold text-dark">{{ order_item.item.title }}</div>
+                                    <div class="small text-muted">{{ order_item.item.category.title }}</div>
+                                    {% if order_item.variations.exists %}
+                                      <div class="small text-muted mt-1">
+                                        {% for v in order_item.variations.all %}
+                                          <span class="mr-2"><strong>{{ v.category|title }}:</strong> {{ v.title }}{% if v.price_modifier > 0 %} (+৳{{ v.price_modifier|floatformat:0 }}){% endif %}</span>
+                                        {% endfor %}
+                                      </div>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                              </td>
+                              <td class="font-weight-bold text-secondary">{{ order_item.quantity }}</td>
+                              <td class="text-right font-weight-bold text-dark">৳{{ order_item.get_final_price|floatformat:2 }}</td>
+                            </tr>
+                          {% endfor %}
+                          <!-- Summary Rows -->
+                          <tr>
+                            <td colspan="2" class="text-right text-muted small font-weight-bold">Subtotal:</td>
+                            <td class="text-right text-secondary">৳{{ order.get_subtotal|floatformat:2 }}</td>
+                          </tr>
+                          {% if order.coupon %}
+                            <tr>
+                              <td colspan="2" class="text-right text-muted small font-weight-bold">Coupon ({{ order.coupon.code }}):</td>
+                              <td class="text-right text-success">-৳{{ order.coupon.amount|floatformat:2 }}</td>
+                            </tr>
+                          {% endif %}
+                          <tr>
+                            <td colspan="2" class="text-right text-muted small font-weight-bold">Shipping:</td>
+                            <td class="text-right text-secondary">৳{{ order.get_shipping_cost|floatformat:2 }}</td>
+                          </tr>
+                          <tr>
+                            <td colspan="2" class="text-right text-dark font-weight-bold">Total:</td>
+                            <td class="text-right text-primary font-weight-bold" style="font-size: 16px;">৳{{ order.get_total|floatformat:2 }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <!-- Shipping / Billing Info & Actions -->
+                    <div class="row m-t-20">
+                      <div class="col-md-6 m-b-15">
+                        <h6 class="font-weight-bold text-dark m-b-8"><i class="fas fa-map-marker-alt text-primary"></i> Shipping Address</h6>
+                        {% if order.shipping_address %}
+                          <p class="text-muted small m-b-2">{{ order.shipping_address.street_address }}</p>
+                          {% if order.shipping_address.apartment_address %}
+                            <p class="text-muted small m-b-2">{{ order.shipping_address.apartment_address }}</p>
+                          {% endif %}
+                          <p class="text-muted small m-b-2">{{ order.shipping_address.district }}, {{ order.shipping_address.zip }}</p>
+                          <p class="text-muted small m-b-2">{{ order.shipping_address.country.name }}</p>
+                          <p class="text-muted small m-b-0"><i class="fas fa-phone small"></i> {{ order.shipping_address.phone_number }}</p>
+                        {% else %}
+                          <p class="text-muted small">No shipping address recorded.</p>
+                        {% endif %}
+                      </div>
+
+                      <div class="col-md-6 m-b-15">
+                        <h6 class="font-weight-bold text-dark m-b-8"><i class="fas fa-credit-card text-primary"></i> Payment Details</h6>
+                        {% if order.payment %}
+                          <p class="text-muted small m-b-2">Method: <strong>{{ order.payment.payment_method }}</strong></p>
+                          <p class="text-muted small m-b-2">Amount: <strong>৳{{ order.payment.amount|floatformat:2 }}</strong></p>
+                          <p class="text-muted small m-b-0">Status: <strong class="text-success">Paid</strong></p>
+                        {% else %}
+                          <p class="text-muted small">Payment details not finalized.</p>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <!-- Refund Request Section -->
+                    {% if not order.refund_requested and not order.refund_granted %}
+                      <div class="text-right border-top p-t-15 m-t-10">
+                        <a href="{% url 'orders:request-refund' %}?ref_code={{ order.ref_code }}" class="btn btn-outline-danger btn-sm bo-rad-20 px-3">
+                          <i class="fas fa-undo"></i> Request Refund
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <div class="m-b-20">
+              <i class="fas fa-shopping-bag text-muted" style="font-size: 60px;"></i>
+            </div>
+            <h4 class="text-muted m-b-20">You haven't placed any orders yet.</h4>
+            <a href="/" class="btn btn-primary px-5 py-3" style="border-radius: 25px; font-weight: 700;">Start Shopping</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Order Summary Panel (Active Cart) -->
+    <div class="col-lg-8 col-12" x-show="activeTab === '#cart'" x-transition x-cloak>
+      <div class="profile-card">
+        <h3 class="m-b-25" style="font-weight: 700; color: #1a202c;">Order Summary</h3>
+        
+        <div id="order-summary-content">
+          <!-- Rendered dynamically via AJAX -->
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Wishlist Panel -->
+    <div class="col-lg-8 col-12" x-show="activeTab === '#wishlist'" x-transition x-cloak>
+      <div class="profile-card">
+        <h3 class="m-b-25" style="font-weight: 700; color: #1a202c;">My Wishlist</h3>
+        
+        <div id="wishlist-page-content">
+          {% if wishlist_items %}
+            <div class="table-responsive">
+              <table class="table table-wishlist align-middle">
+                <thead>
+                  <tr class="table-head">
+                    <th scope="col" style="width: 80px;">#</th>
+                    <th scope="col" style="width: 140px;">Image</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col" style="width: 200px;">Price</th>
+                    <th scope="col" style="width: 320px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for w in wishlist_items %}
+                    <tr id="wishlist-row-{{ w.item.slug }}" class="wishlist-product-row">
+                      <th scope="row" class="font-weight-bold text-muted">{{ forloop.counter }}</th>
+                      <td>
+                        {% if w.item.image %}
+                          <img src="{{ w.item.image.url }}" class="wishlist-table-img" alt="">
+                        {% else %}
+                          <img src="{% static 'images/icons/icon-header-02.png' %}" class="wishlist-table-img" alt="">
+                        {% endif %}
+                      </td>
+                      <td>
+                        <a href="{{ w.item.get_absolute_url }}" class="text-dark font-weight-bold hov-color-primary" style="font-size: 15px;">{{ w.item.title }}</a>
+                      </td>
+                      <td>
+                        {% if w.item.discount_price %}
+                          <span style="text-decoration: line-through; color: #a0aec0; margin-right: 8px;">৳{{ w.item.price }}</span>
+                          <span class="text-danger font-weight-bold">৳{{ w.item.discount_price }}</span>
+                        {% else %}
+                          <span class="font-weight-bold">৳{{ w.item.price }}</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <a href="{{ w.item.get_add_to_cart_url }}" class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" style="height: 35px; font-size: 13px; padding: 0 20px; min-width: 120px; text-decoration: none !important;">
+                            Add to Cart
+                          </a>
+                          <button class="btn-wishlist-toggle wishlist-remove-btn m-l-25" data-slug="{{ w.item.slug }}" title="Remove from Wishlist">
+                            <i class="fas fa-trash-alt"></i> Remove
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-5">
+              <div class="m-b-20">
+                <i class="far fa-heart text-muted" style="font-size: 60px;"></i>
+              </div>
+              <h4 class="text-muted m-b-20">Your wishlist is empty</h4>
+              <a href="/" class="btn btn-primary px-5 py-3" style="border-radius: 25px; font-weight: 700;">Continue Shopping</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Alert for Copy Confirmation -->
+<div id="copy-toast" style="display: none;">
+  <i class="fas fa-check-circle" style="color: #10b981;"></i> Reference code copied to clipboard!
+</div>
+
+<!-- Scripts for Summary, Clipboard and Wishlist Transitions -->
+<script>
+  function copyRefCode(code) {
+    navigator.clipboard.writeText(code).then(function() {
+      var toast = document.getElementById("copy-toast");
+      toast.style.display = "block";
+      setTimeout(function() {
+        toast.style.display = "none";
+      }, 3000);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Handle file upload display label update
+    var avatarInput = document.getElementById('id_avatar');
+    if (avatarInput) {
+      avatarInput.addEventListener('change', function(e) {
+        var fileName = e.target.files[0] ? e.target.files[0].name : '';
+        var textSpan = this.parentElement.querySelector('.custom-file-text');
+        var selectedSpan = document.getElementById('avatar-selected-name');
+        if (fileName) {
+          textSpan.textContent = "Change Selected File";
+          selectedSpan.textContent = fileName;
+          selectedSpan.style.display = 'block';
+        } else {
+          textSpan.textContent = "Choose profile photo or drag here";
+          selectedSpan.style.display = 'none';
+        }
+      });
+    }
+    // -------------------------------------------------------------
+    // Wishlist Client Side Dynamic Row Removal
+    // -------------------------------------------------------------
+    document.addEventListener("click", function(e) {
+      var btn = e.target.closest(".btn-wishlist-toggle");
+      if (!btn) return;
+      var slug = btn.getAttribute("data-slug");
+      if (!slug) return;
+      
+      var row = document.getElementById("wishlist-row-" + slug);
+      if (row) {
+        row.style.opacity = "0.5";
+        setTimeout(function() {
+          row.remove();
+          var rows = document.querySelectorAll("[id^='wishlist-row-']");
+          if (rows.length === 0) {
+            var container = document.getElementById("wishlist-page-content");
+            if (container) {
+              container.innerHTML = `
+                <div class="text-center py-5">
+                  <div class="m-b-20">
+                    <i class="far fa-heart text-muted" style="font-size: 60px;"></i>
+                  </div>
+                  <h4 class="text-muted m-b-20">Your wishlist is empty</h4>
+                  <a href="/" class="btn btn-primary px-5 py-3" style="border-radius: 25px; font-weight: 700;">Continue Shopping</a>
+                </div>
+              `;
+            }
+          }
+        }, 300);
+      }
+    });
+
+    // -------------------------------------------------------------
+    // Order Summary Cart Loader (AJAX)
+    // -------------------------------------------------------------
+    var summaryContainer = document.getElementById("order-summary-content");
+    
+    window.renderSummary = function(data) {
+      if (!summaryContainer) return;
+      
+      if (!data.items || data.items.length === 0) {
+        summaryContainer.innerHTML = `
+          <div class="text-center py-5">
+            <div class="m-b-20">
+              <i class="fas fa-shopping-cart text-muted" style="font-size: 60px;"></i>
+            </div>
+            <h4 class="text-muted m-b-20">Your cart is empty</h4>
+            <a href="/" class="btn btn-primary px-5 py-3" style="border-radius: 25px; font-weight: 700;">Continue Shopping</a>
+          </div>
+        `;
+        return;
+      }
+      
+      var html = `
+        <div class="table-responsive">
+          <table class="table table-summary align-middle">
+            <thead>
+              <tr class="table-head">
+                <th scope="col" style="width: 80px;">#</th>
+                <th scope="col" style="width: 140px;">Image</th>
+                <th scope="col">Product Name</th>
+                <th scope="col" style="width: 180px;">Price</th>
+                <th scope="col" style="width: 160px;">Quantity</th>
+                <th scope="col" style="width: 220px;">Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      data.items.forEach(function(item, index) {
+        var imgUrl = item.image ? item.image : '/static/images/icons/icon-header-02.png';
+        
+        var priceHtml = '';
+        if (item.discount_price) {
+          priceHtml = `
+            <span style="text-decoration: line-through; color: #a0aec0; margin-right: 8px;">${item.price}</span>
+            <span class="text-danger font-weight-bold">${item.discount_price}</span>
+          `;
+        } else {
+          priceHtml = `<span>${item.price}</span>`;
+        }
+        
+        var totalHtml = '';
+        if (item.saved_amount) {
+          totalHtml = `
+            <span class="font-weight-bold text-dark">${item.total_price}</span>
+            <span class="badge badge-primary ml-2" style="font-size: 11px; padding: 4px 8px; border-radius: 12px;">Saving ${item.saved_amount}</span>
+          `;
+        } else {
+          totalHtml = `<span class="font-weight-bold text-dark">${item.total_price}</span>`;
+        }
+        
+        html += `
+          <tr class="summary-product-row">
+            <th scope="row" class="font-weight-bold text-muted">${index + 1}</th>
+            <td>
+              <img src="${imgUrl}" class="summary-table-img" alt="">
+            </td>
+            <td>
+              <a href="/product/${item.slug}/" class="text-dark font-weight-bold hov-color-primary" style="font-size: 15px;">${item.title}</a>
+              ${item.variations && item.variations.length > 0 ? `
+                <div class="small text-muted" style="margin-top: 4px;">
+                  ${item.variations.map(function(v) {
+                    return '<span class="mr-2"><strong>' + v.category.toUpperCase() + ':</strong> ' + v.title + (v.price_modifier > 0 ? ' (+৳' + Math.round(v.price_modifier) + ')' : '') + '</span>';
+                  }).join('')}
+                </div>
+              ` : ''}
+            </td>
+            <td>${priceHtml}</td>
+            <td>
+              <div class="summary-qty-container">
+                <button class="summary-qty-btn qty-minus-btn" data-slug="${item.slug}"><i class="fas fa-minus"></i></button>
+                <span class="summary-qty-val">${item.quantity}</span>
+                <button class="summary-qty-btn qty-plus-btn" data-slug="${item.slug}"><i class="fas fa-plus"></i></button>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex justify-content-between align-items-center">
+                ${totalHtml}
+                <button class="summary-remove-btn" data-slug="${item.slug}"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      
+      // Coupon row
+      if (data.coupon) {
+        html += `
+          <tr class="coupon-row">
+            <td colspan="5" class="text-right font-weight-bold py-3">Coupon (${data.coupon.code}) :</td>
+            <td class="font-weight-bold py-3 text-success">- ${data.coupon.amount}</td>
+          </tr>
+        `;
+      }
+      
+      // Order Total row
+      html += `
+          <tr>
+            <td colspan="5" class="text-right font-weight-bold py-3" style="font-size: 16px;">Order Total :</td>
+            <td class="font-weight-bold py-3 text-primary" style="font-size: 20px;">${data.total}</td>
+          </tr>
+          <tr>
+            <td colspan="6" class="py-4">
+              <a href="/orders/checkout/" class="btn btn-warning float-right ml-2 px-5 py-3" style="border-radius: 25px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Checkout</a>
+              <a href="/" class="btn btn-primary float-right px-5 py-3" style="border-radius: 25px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Continue Shopping</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      `;
+      
+      summaryContainer.innerHTML = html;
+    }
+    
+    // Fetch initial cart info
+    fetch('/cart/api/info/')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        renderSummary(data);
+      })
+      .catch(function(err) {
+        console.error("Error loading order summary:", err);
+      });
+      
+    // Handle AJAX events for +, -, and delete clicks inside summary table
+    if (summaryContainer) {
+      summaryContainer.addEventListener("click", function(e) {
+        var btn = e.target.closest("button");
+        if (!btn) return;
+        
+        var slug = btn.getAttribute("data-slug");
+        if (!slug) return;
+        
+        e.preventDefault();
+        
+        var url = "";
+        if (btn.classList.contains("qty-plus-btn")) {
+          url = '/cart/api/add/' + slug + '/';
+        } else if (btn.classList.contains("qty-minus-btn")) {
+          url = '/cart/api/remove-single/' + slug + '/';
+        } else if (btn.classList.contains("summary-remove-btn")) {
+          url = '/cart/api/remove/' + slug + '/';
+        } else {
+          return;
+        }
+        
+        summaryContainer.style.opacity = "0.6";
+        
+        fetch(url)
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            summaryContainer.style.opacity = "1";
+            renderSummary(data);
+            if (window.updateCartUI) {
+              window.updateCartUI(data);
+            }
+          })
+          .catch(function(err) {
+            summaryContainer.style.opacity = "1";
+            console.error("Error updating item inside summary:", err);
+          });
+      });
+    }
+  });
+</script>
+{% endblock %}

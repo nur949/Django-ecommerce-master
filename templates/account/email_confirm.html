@@ -1,0 +1,29 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+{% load account %}
+
+{% block head_title %}{% trans "Confirm E-mail Address" %}{% endblock %}
+
+{% block auth_content %}
+<div class="auth-header">
+	<h2 class="auth-title">Confirm Email</h2>
+	<p class="auth-subtitle">Validate your email address</p>
+</div>
+
+{% if confirmation %}
+	{% user_display confirmation.email_address.user as user_display %}
+	<p class="text-muted text-center mb-4" style="font-size: 14px; line-height: 1.5;">
+		{% blocktrans with confirmation.email_address.email as email %}Please confirm that <a href="mailto:{{ email }}" class="auth-footer-link">{{ email }}</a> is an e-mail address for user {{ user_display }}.{% endblocktrans %}
+	</p>
+	<form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+		{% csrf_token %}
+		<button class="btn-auth-submit" type="submit">{% trans 'Confirm' %}</button>
+	</form>
+{% else %}
+	{% url 'account_email' as email_url %}
+	<p class="text-danger text-center mb-4" style="font-size: 14px; line-height: 1.5;">
+		{% blocktrans %}This e-mail confirmation link expired or is invalid. Please <a href="{{ email_url }}" class="auth-footer-link">issue a new e-mail confirmation request</a>.{% endblocktrans %}
+	</p>
+{% endif %}
+{% endblock %}

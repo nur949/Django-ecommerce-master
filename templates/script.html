@@ -1,0 +1,167 @@
+{% load static %}
+
+<script
+  type="text/javascript"
+  src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"
+></script>
+
+<script
+  type="text/javascript"
+  src="{% static 'vendor/animsition/js/animsition.min.js' %}"
+></script>
+
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+  integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+  crossorigin="anonymous"
+></script>
+<script
+  src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+  integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+  crossorigin="anonymous"
+></script>
+
+<script
+  type="text/javascript"
+  src="{% static 'vendor/select2/select2.min.js' %}"
+></script>
+<script type="text/javascript">
+  $(".selection-1").select2({
+    minimumResultsForSearch: 20,
+    dropdownParent: $("#dropDownSelect1")
+  });
+</script>
+
+<script
+  type="text/javascript"
+  src="{% static 'vendor/slick/slick.min.js' %}"
+></script>
+<script type="text/javascript" src="{% static 'js/slick-custom.js' %}"></script>
+
+<script
+  type="text/javascript"
+  src="{% static 'vendor/countdowntime/countdowntime.js' %}"
+></script>
+
+<script
+  type="text/javascript"
+  src="{% static 'vendor/lightbox2/js/lightbox.min.js' %}"
+></script>
+<script crossorigin src="{% static 'js/react.development.js' %}"></script>
+<script crossorigin src="{% static 'js/react-dom.development.js' %}"></script>
+
+<script
+  type="text/javascript"
+  src="{% static 'vendor/sweetalert/sweetalert.min.js' %}"
+></script>
+<script type="text/javascript">
+  // Professional Toast Notification System
+  function showToast(message, type) {
+    type = type || 'success';
+    var container = document.querySelector('.toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    var toast = document.createElement('div');
+    toast.className = 'toast-notification toast-' + type;
+
+    var icon = '<i class="fas fa-check-circle" style="color: #10b981;"></i>';
+    if (type === 'error') {
+      icon = '<i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>';
+    } else if (type === 'info') {
+      icon = '<i class="fas fa-info-circle" style="color: #3b82f6;"></i>';
+    }
+
+    toast.innerHTML = ' \
+      <div style="display: flex; align-items: center; gap: 10px;"> \
+        ' + icon + ' \
+        <span>' + message + '</span> \
+      </div> \
+      <button class="toast-close">&times;</button> \
+    ';
+
+    container.appendChild(toast);
+
+    // Trigger slide-in
+    setTimeout(function() {
+      toast.classList.add('show');
+    }, 10);
+
+    // Close button event
+    toast.querySelector('.toast-close').addEventListener('click', function() {
+      closeToast(toast);
+    });
+
+    // Auto-remove after 3.5s
+    setTimeout(function() {
+      closeToast(toast);
+    }, 3500);
+  }
+
+  function closeToast(toast) {
+    if (!toast) return;
+    toast.classList.remove('show');
+    toast.style.opacity = '0';
+    setTimeout(function() {
+      toast.remove();
+    }, 400);
+  }
+
+  window.showToast = showToast;
+
+  // Run on page load
+  $(document).ready(function() {
+    // Process Django backend messages (convert to toast)
+    $(".django-message").each(function() {
+      var msg = $(this).text().trim();
+      var tags = $(this).data("tags") || "success";
+      var type = 'success';
+      if (tags.indexOf('error') !== -1 || tags.indexOf('danger') !== -1) {
+        type = 'error';
+      } else if (tags.indexOf('info') !== -1 || tags.indexOf('warning') !== -1) {
+        type = 'info';
+      }
+      showToast(msg, type);
+      $(this).remove();
+    });
+
+    // AJAX Add To Cart for Grid items (No Page Reload)
+    $(document).on("click", ".block2-btn-addcart a", function(e) {
+      e.preventDefault();
+      var link = $(this);
+      var productCard = link.closest(".block2");
+      var nameProduct = productCard.find(".block2-name").text().trim();
+      var href = link.attr("href");
+
+      // Extract slug from URL path (e.g., /cart/add-to-cart/product-slug/)
+      var parts = href.split('/').filter(Boolean);
+      var slug = parts[parts.length - 1];
+
+      if (!slug) return;
+
+      // Visual indicator for loading
+      link.css("opacity", "0.6");
+
+      fetch('/cart/api/add/' + slug + '/')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          link.css("opacity", "1");
+          // Update navigation count dynamically
+          if (window.updateCartUI) {
+            window.updateCartUI(data);
+          }
+          showToast(nameProduct + " has been added to your cart!", "success");
+        })
+        .catch(function(err) {
+          link.css("opacity", "1");
+          console.error("AJAX add to cart failed:", err);
+          showToast("Failed to add " + nameProduct + " to cart.", "error");
+        });
+    });
+  });
+</script>
+
+<script src="{% static 'js/main.js' %}"></script>

@@ -1,0 +1,100 @@
+{% extends 'base.html' %} 
+{% load static %} 
+{% block content %}
+
+<style>
+  /* Premium styles for Wishlist page */
+  .wishlist-table-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+  }
+  .table-wishlist th, .table-wishlist td {
+    vertical-align: middle !important;
+  }
+  .wishlist-remove-btn {
+    background: transparent;
+    border: none;
+    outline: none !important;
+    color: #a0aec0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.2s ease;
+  }
+  .wishlist-remove-btn:hover {
+    color: #e53e3e;
+  }
+</style>
+
+<div class="container p-t-60 p-b-60">
+  <div class="row">
+    <div class="col-lg-12">
+      <h2 class="m-b-30" style="font-weight: 700; color: #1a202c;">My Wishlist</h2>
+      
+      <div id="wishlist-page-content">
+        {% if wishlist_items %}
+        <div class="table-responsive">
+          <table class="table table-wishlist align-middle">
+            <thead>
+              <tr class="table-head">
+                <th scope="col" style="width: 80px;">#</th>
+                <th scope="col" style="width: 140px;">Image</th>
+                <th scope="col">Product Name</th>
+                <th scope="col" style="width: 200px;">Price</th>
+                <th scope="col" style="width: 320px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for w in wishlist_items %}
+              <tr>
+                <th scope="row" class="font-weight-bold text-muted">{{ forloop.counter }}</th>
+                <td>
+                  {% if w.item.image %}
+                    <img src="{{ w.item.image.url }}" class="wishlist-table-img" alt="">
+                  {% else %}
+                    <img src="{% static 'images/icons/icon-header-02.png' %}" class="wishlist-table-img" alt="">
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{{ w.item.get_absolute_url }}" class="text-dark font-weight-bold hov-color-primary" style="font-size: 15px;">{{ w.item.title }}</a>
+                </td>
+                <td>
+                  {% if w.item.discount_price %}
+                    <span style="text-decoration: line-through; color: #a0aec0; margin-right: 8px;">৳{{ w.item.price }}</span>
+                    <span class="text-danger font-weight-bold">৳{{ w.item.discount_price }}</span>
+                  {% else %}
+                    <span class="font-weight-bold">৳{{ w.item.price }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <a href="{{ w.item.get_add_to_cart_url }}" class="flex-c-m size1 bg4 bo-rad-23 hov1 s-text1 trans-0-4" style="height: 35px; font-size: 13px; padding: 0 20px; min-width: 120px; text-decoration: none !important;">
+                      Add to Cart
+                    </a>
+                    <button class="btn-wishlist-toggle wishlist-remove-btn m-l-25" data-slug="{{ w.item.slug }}" title="Remove from Wishlist">
+                      <i class="fas fa-trash-alt"></i> Remove
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+          <div class="m-b-20">
+            <i class="far fa-heart text-muted" style="font-size: 60px;"></i>
+          </div>
+          <h4 class="text-muted m-b-20">Your wishlist is empty</h4>
+          <a href="/" class="btn btn-primary px-5 py-3" style="border-radius: 25px; font-weight: 700;">Continue Shopping</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

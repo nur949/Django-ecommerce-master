@@ -1,0 +1,98 @@
+{% load static %}
+<!-- ------------------------------footer sub end---------------------------------- -->
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css?family=Abel|Lato|Open+Sans&display=swap" rel="stylesheet">
+<style>
+  
+    /* footer */
+#footer-main{
+	background: #000;
+	color: white;
+	font-size: 0.8rem;
+	padding: 2.5rem 0;
+    font-family: 'Lato', sans-serif;
+}
+
+#footer-main a{
+	font-size: 14px;
+	display: block;
+	margin: 0.3rem;
+	color: grey;
+}
+
+#footer-main a:hover{
+	font-weight: bold;
+	color: white;
+}
+
+#footer-main h6 a{
+    color: white;
+
+    
+}
+
+
+
+#footer-main hr {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border: 0;
+    border-top: 1px solid white;
+}
+
+#footer-main img{
+	margin-right: 0.6rem;
+}
+</style>
+
+<footer id="footer-main">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-3">
+            <br>
+            <h6 class="mt-3"><a href="/admin/">ADMIN PANEL</a></h6>
+            
+            <div class="mt-3 flex gap-4">
+                {% if site_config.facebook_link %}<a href="{{ site_config.facebook_link }}" target="_blank" style="display: inline-block; font-size: 18px;"><i class="fab fa-facebook"></i></a>{% endif %}
+                {% if site_config.instagram_link %}<a href="{{ site_config.instagram_link }}" target="_blank" style="display: inline-block; font-size: 18px;"><i class="fab fa-instagram"></i></a>{% endif %}
+                {% if site_config.twitter_link %}<a href="{{ site_config.twitter_link }}" target="_blank" style="display: inline-block; font-size: 18px;"><i class="fab fa-twitter"></i></a>{% endif %}
+                {% if site_config.youtube_link %}<a href="{{ site_config.youtube_link }}" target="_blank" style="display: inline-block; font-size: 18px;"><i class="fab fa-youtube"></i></a>{% endif %}
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <h6 class="mt-3 text-white">GET HELP</h6>
+            <a href="">Order Status</a>
+            <a href="">Shipping and Delivery</a>
+            <a href="">Returns</a>
+            <a href="">Payment Options</a>
+        </div>
+        <div class="col-sm-3">
+            <h6 class="mt-3 text-white">ABOUT US</h6>
+            <p style="color: grey; font-size: 13px; line-height: 1.6; margin-top: 10px;">
+                {{ site_config.footer_about_text|default:"News, careers, store locations and corporate responsibility options for the platform." }}
+            </p>
+        </div>
+        <div class="col-sm-3">
+            <h6 class="mt-3 text-white">STORE LOCATION</h6>
+            {% if site_config.address %}
+                <p style="color: grey; font-size: 13px; margin-top: 10px;"><i class="fa fa-map-marker-alt"></i> {{ site_config.address }}</p>
+            {% endif %}
+            {% if site_config.contact_phone %}
+                <p style="color: grey; font-size: 13px; margin-top: 5px;"><i class="fa fa-phone"></i> {{ site_config.contact_phone }}</p>
+            {% endif %}
+            {% if site_config.contact_email %}
+                <p style="color: grey; font-size: 13px; margin-top: 5px;"><i class="fa fa-envelope"></i> {{ site_config.contact_email }}</p>
+            {% endif %}
+        </div>
+      </div>
+      <hr>
+      <div class="row flex items-center justify-between px-3">
+        <span style="color: grey;">{{ site_config.footer_copyright_text }}</span>
+        <div style="color: grey; font-size: 12px;">
+            Privacy Policy | Terms of Service
+        </div>
+      </div>
+    </div>
+  </footer>
+<!-- ------------------------------footer end---------------------------------- -->
+
